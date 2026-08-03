@@ -1,19 +1,20 @@
 <script>
-  import { appConfig } from '$lib/core/appConfig.js';
+  import { appFeeds } from '$lib/core/appFeeds.js';
 
   let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();
 
   let allNames = $derived.by(() => {
     const list = [
-      ...Object.values(appConfig.coreSources),
-      ...Object.values(appConfig.globalSources)
+      ...Object.values(appFeeds.coreSources),
+      ...Object.values(appFeeds.globalSources)
     ];
-    if (extendedMode) list.push(...Object.values(appConfig.extendedSources));
+    if (extendedMode) list.push(...Object.values(appFeeds.extendedSources));
     return [...new Set(list)].sort();
   });
 
-  let localAllEnabled = $state(allSourcesEnabled);
-  let localEnabledSet = $state(new Set(enabledSources));
+  let initValues = { all: allSourcesEnabled, set: enabledSources };
+  let localAllEnabled = $state(initValues.all);
+  let localEnabledSet = $state(new Set(initValues.set));
 
   function save() {
     onSaved(localAllEnabled, localEnabledSet);

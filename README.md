@@ -69,7 +69,7 @@ The Radical aggregates from **35 independent news sources**, organised into thre
 ### Things to Fix 🛠️
 - [ ] Reliably display authors.
 - [ ] Reliably display article photos.
-- [ ] Filter out non-news articles (theory, podcasts, etc.) and remove the current, weak "FILTER THEORY" toggle.
+- [ ] Filter out non-news articles (theory, podcasts, etc.).
 - [x] A better GitHub README.
 
 ### Features to Add ✨

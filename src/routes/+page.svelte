@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { appConfig } from '$lib/core/appConfig.js';
+  import { appFeeds } from '$lib/core/appFeeds.js';
   import { networkConfig } from '$lib/core/networkConfig.js';
   import { feedParser } from '$lib/services/feedParser.js';
   import { appColors } from '$lib/core/appColors.js';
@@ -31,7 +31,6 @@
 
   // Filter & Configuration State
   let extendedMode = $state(false);
-  let hideTheory = $state(true);
   let allSourcesEnabled = $state(true);
   let enabledSources = $state(new Set());
   let activeFilter = $state("ALL");
@@ -48,7 +47,6 @@
       if (colorVal) primaryColor = colorVal;
 
       extendedMode = localStorage.getItem('extended_coverage') === 'true';
-      hideTheory = localStorage.getItem('hide_theory') !== 'false';
       allSourcesEnabled = localStorage.getItem('all_sources_enabled') !== 'false';
 
       const savedSources = localStorage.getItem('enabled_sources');
@@ -56,8 +54,8 @@
         enabledSources = new Set(JSON.parse(savedSources));
       } else {
         enabledSources = new Set([
-          ...Object.values(appConfig.coreSources),
-          ...Object.values(appConfig.globalSources)
+          ...Object.values(appFeeds.coreSources),
+          ...Object.values(appFeeds.globalSources)
         ]);
       }
 
@@ -110,8 +108,8 @@
   }
 
   async function fetchNews(isBackground = false) {
-    const sources = { ...appConfig.coreSources, ...appConfig.globalSources };
-    if (extendedMode) Object.assign(sources, appConfig.extendedSources);
+    const sources = { ...appFeeds.coreSources, ...appFeeds.globalSources };
+    if (extendedMode) Object.assign(sources, appFeeds.extendedSources);
 
     if (!allSourcesEnabled) {
       for (const [url, name] of Object.entries(sources)) {
@@ -201,23 +199,18 @@
       filtered = filtered.filter(a => a.topics.includes(activeFilter));
     }
 
-    // 2. Filter Theory
-    if (hideTheory) {
-      filtered = filtered.filter(a => !a.topics.includes("THEORY/REVIEW"));
-    }
-
-    // 3. Extended Coverage
+    // 2. Extended Coverage
     if (!extendedMode) {
-      const extendedNames = new Set(Object.values(appConfig.extendedSources));
+      const extendedNames = new Set(Object.values(appFeeds.extendedSources));
       filtered = filtered.filter(a => !extendedNames.has(a.source));
     }
 
-    // 4. Manual Signal Source Filter
+    // 3. Manual Signal Source Filter
     if (!allSourcesEnabled) {
       filtered = filtered.filter(a => enabledSources.has(a.source));
     }
 
-    // 5. Search Query
+    // 4. Search Query
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(a =>
@@ -340,8 +333,6 @@
     onThemeChanged={updateTheme}
     {extendedMode}
     onExtendedModeChanged={(v) => { extendedMode = v; localStorage.setItem('extended_coverage', v); applyLogic(); if (v) fetchNews(); }}
-    {hideTheory}
-    onHideTheoryChanged={(v) => { hideTheory = v; localStorage.setItem('hide_theory', v); applyLogic(); }}
     {activeFilter}
     onFilterChanged={(f) => { activeFilter = f; applyLogic(); drawerOpen = false; }}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}

@@ -1,6 +1,6 @@
 <script>
   import { appColors } from '$lib/core/appColors.js';
-  import { appConfig } from '$lib/core/appConfig.js';
+  import { appTopics } from '$lib/core/appTopics.js';
   import CustomColorDialog from '$lib/components/dialogs/CustomColorDialog.svelte';
 
   let {
@@ -8,8 +8,6 @@
     onThemeChanged,
     extendedMode,
     onExtendedModeChanged,
-    hideTheory,
-    onHideTheoryChanged,
     activeFilter,
     onFilterChanged,
     onShowSources,
@@ -25,11 +23,6 @@
   function handleExtendedChange(e) {
     const target = /** @type {HTMLInputElement} */ (e.currentTarget);
     onExtendedModeChanged(target.checked);
-  }
-
-  function handleTheoryChange(e) {
-    const target = /** @type {HTMLInputElement} */ (e.currentTarget);
-    onHideTheoryChanged(target.checked);
   }
 </script>
 
@@ -64,18 +57,6 @@
         <div class="w-9 h-5 bg-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {extendedMode ? primaryColor : ''}"></div>
       </label>
     </div>
-
-    <!-- Filter Theory Switch -->
-    <div class="flex items-center justify-between py-1">
-      <div>
-        <div class="text-xs font-bold text-textMain">FILTER THEORY</div>
-        <div class="text-[10px] text-textMuted">Hide book reviews and essays.</div>
-      </div>
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" checked={hideTheory} onchange={handleTheoryChange} class="sr-only peer">
-        <div class="w-9 h-5 bg-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {hideTheory ? primaryColor : ''}"></div>
-      </label>
-    </div>
   </div>
 
   <!-- Theme Palette section -->
@@ -108,7 +89,7 @@
   <div class="mt-6 pt-4 border-t border-white/5">
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-2.5 uppercase">TOPIC FILTERS</div>
     <div class="flex flex-col space-y-2">
-      {#each ["ALL", ...appConfig.topics.map(t => t.name)] as filterName}
+       {#each ["ALL", ...appTopics.map(t => t.name)] as filterName}
         <button
           onclick={() => onFilterChanged(filterName)}
           class="w-full text-left px-3.5 py-2 border transition-colors text-[11px] font-bold uppercase"

@@ -1,5 +1,6 @@
 import { Article } from '$lib/models/Article.js';
-import { appConfig } from '$lib/core/appConfig.js';
+import { appFeeds } from '$lib/core/appFeeds.js';
+import { appTopics } from '$lib/core/appTopics.js';
 import { networkConfig } from '$lib/core/networkConfig.js';
 import { feedFilterRules } from '$lib/core/feedFilterRules.js';
 
@@ -20,8 +21,8 @@ export const feedParser = {
       let title = this.cleanHtml(titleMatch ? titleMatch[1] : 'Untitled');
 
       // Check AU relevance for global sources
-      if (Object.values(appConfig.globalSources).includes(sourceName)) {
-        const isRelevant = appConfig.auKeywords.some(k => {
+      if (Object.values(appFeeds.globalSources).includes(sourceName)) {
+        const isRelevant = appFeeds.auKeywords.some(k => {
           const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
           return pattern.test(title.toLowerCase());
         });
@@ -75,12 +76,9 @@ export const feedParser = {
 
       const tags = [];
       const textLower = `${title} ${bestDesc}`.toLowerCase();
-      const isTheory = appConfig.theoryKeywords.some(k => textLower.includes(k.toLowerCase()));
-      if (isTheory) tags.push("THEORY/REVIEW");
-
       const titleLower = title.toLowerCase();
 
-      for (const topic of appConfig.topics) {
+      for (const topic of appTopics) {
         let score = 0.0;
         for (const kw of topic.keywords) {
           const kwLower = kw.keyword.toLowerCase();

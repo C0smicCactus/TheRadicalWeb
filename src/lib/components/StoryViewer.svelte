@@ -4,11 +4,19 @@
 
   let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onClose } = $props();
 
+  /* svelte-ignore state_referenced_locally */
   let currentIndex = $state(initialIndex);
   let resolvedThumbnails = $state({});
   let progress = $state(0);
   let animationFrame;
   let startTime;
+
+  // Swipe gesture state
+  let touchStartX = $state(0);
+  let touchStartY = $state(0);
+  let touchCurrentX = $state(0);
+  let isSwiping = $state(false);
+  let swipeDirection = $state(''); // 'left' or 'right'
 
   function loadThumb(index) {
     const article = articles[index];
@@ -69,7 +77,65 @@
     };
   });
 
+  // Minimum distance in pixels to register a swipe
+  const SWIPE_THRESHOLD = 50;
+  // Maximum Y movement allowed during swipe (to distinguish from vertical scrolling)
+  const SWIPE_Y_THRESHOLD = 100;
+
+  function handleTouchStart(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isSwiping = true;
+    swipeDirection = '';
+  }
+
+  function handleTouchMove(e) {
+    if (!isSwiping) return;
+
+    touchCurrentX = e.touches[0].clientX;
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+    const deltaX = touchCurrentX - touchStartX;
+
+    // If vertical movement is too large, cancel swipe (user is scrolling)
+    if (deltaY > SWIPE_Y_THRESHOLD) {
+      isSwiping = false;
+      swipeDirection = '';
+      return;
+    }
+
+    // Determine swipe direction
+    if (Math.abs(deltaX) > 10) {
+      swipeDirection = deltaX > 0 ? 'right' : 'left';
+    }
+  }
+
+  function handleTouchEnd() {
+    if (!isSwiping) return;
+
+    const deltaX = touchCurrentX - touchStartX;
+
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        // Swiped right -> go to previous story
+        prevStory();
+      } else {
+        // Swiped left -> go to next story
+        nextStory();
+      }
+    }
+
+    // Reset swipe state
+    isSwiping = false;
+    swipeDirection = '';
+    touchStartX = 0;
+    touchStartY = 0;
+    touchCurrentX = 0;
+  }
+
   function handleTap(e) {
+    // Don't process tap if a swipe occurred
+    if (swipeDirection || isSwiping) return;
+
     const width = window.innerWidth;
     const x = e.clientX;
     if (x < width / 3) {
@@ -86,7 +152,26 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="fixed inset-0 bg-black z-50 flex flex-col cursor-pointer select-none" onclick={handleTap}>
+<div
+  class="fixed inset-0 bg-black z-50 flex flex-col cursor-pointer select-none"
+  onclick={handleTap}
+  ontouchstart={handleTouchStart}
+  ontouchmove={handleTouchMove}
+  ontouchend={handleTouchEnd}
+>
+  <!-- Swipe Feedback Indicator -->
+  {#if isSwiping && swipeDirection}
+    <div
+      class="absolute inset-0 flex items-center justify-center pointer-events-none z-[60]"
+      style="opacity: {Math.min(Math.abs(touchCurrentX - touchStartX) / 150, 0.5)};"
+    >
+      {#if swipeDirection === 'left'}
+        <i class="fa-solid fa-arrow-left text-white text-6xl drop-shadow-lg"></i>
+      {:else}
+        <i class="fa-solid fa-arrow-right text-white text-6xl drop-shadow-lg"></i>
+      {/if}
+    </div>
+  {/if}
   <!-- Background Image & Gradient -->
   <div class="absolute inset-0 bg-[#131313]">
     {#if articles[currentIndex]}
@@ -134,6 +219,7 @@
       <button
         onclick={(e) => { e.stopPropagation(); onClose(); }}
         class="text-white/80 hover:text-white p-2 rounded-full bg-black/40"
+        aria-label="Close"
       >
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
