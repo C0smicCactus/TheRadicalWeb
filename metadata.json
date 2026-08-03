@@ -1,0 +1,6 @@
+{
+  "name": "The Radical",
+  "description": "An independent news aggregator centralising reporting from Australian political and social perspectives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
