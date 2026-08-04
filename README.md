@@ -1,26 +1,52 @@
+<div align="center">
+
 # TheRadicalWeb 🌐
 
-A high-performance news aggregator centralised for Australian political and social perspectives built for rapid information scanning and independent media discovery.
+**A high-performance news aggregator centralised for Australian political and social perspectives built for rapid information scanning and independent media discovery.**
 
-[**View Live Site**](https://c0smiccactus.github.io/TheRadicalWeb/)
+<p>
+  <a href="https://c0smiccactus.github.io/TheRadicalWeb/"><strong>🌍 View Live Site</strong></a>
+</p>
 
-*This is a Svelte port of the Flutter project, [The Radical](https://github.com/C0smicCactus/TheRadical).*
+<p>
+  <img src="https://img.shields.io/badge/Svelte-5-ff3e00?logo=svelte&logoColor=white" />
+  <img src="https://img.shields.io/badge/Status-Beta-orange" />
+  <img src="https://img.shields.io/badge/Feeds-35-success" />
+  <a href="https://www.gnu.org/licenses/gpl-3.0">
+    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPLv3 License">
+  </a>
+</p>
+
+*This is a Svelte port of the Flutter project,
+[The Radical](https://github.com/C0smicCactus/TheRadical).*
+
+</div>
 
 ---
 
 ## ⚠️ Important
 
-**Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it relies on direct RSS/Atom feeds. You may encounter incomplete metadata as we refine our custom regex-based parsing engines.
+> [!WARNING]
+> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it relies on direct RSS/Atom feeds. You may encounter incomplete metadata as we refine our custom regex-based parsing engines.
+
+---
 
 ## 💡 Motivation
 
 The Radical was born out of a need to centralise news from leftist and independent perspectives without the friction of checking dozens of separate websites. In the current media landscape, independent voices are often scattered; this dashboard brings them into a single, cohesive interface.
 
-## 📊 Feed Sources
+---
+
+# 📊 Feed Sources
 
 The Radical aggregates from **35 independent news sources**, organised into three categories:
 
-### Core Sources (28)
+<table>
+<tr>
+<td valign="top" width="60%">
+
+## Core Sources (28)
+
 - Picket Line
 - Green Left
 - Red Flag
@@ -50,27 +76,42 @@ The Radical aggregates from **35 independent news sources**, organised into thre
 - Koori Mail
 - 3CR
 
-### Global Sources (3)
+</td>
+<td valign="top" width="40%">
+
+## Global Sources (3)
+
 - Jacobin
 - The Militant
 - Counter Punch
 
-### Extended Sources (4)
+<br>
+
+## Extended Sources (4)
+
 - Michael West
 - Independent Australia
 - The Conversation
 - The Guardian (GNM)
 
+</td>
+</tr>
+</table>
+
+---
+
+> [!TIP]
 > **Prefer your own RSS reader? No dramas!**
-> All the RSS feeds used in this project can be found [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/core/appConfig.js).
+>
+> All the RSS feeds used in this project can be found
+> [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/core/appFeeds.js).
 
-## 🚀 Roadmap & Known Issues
+---
 
-### Things to Fix 🛠️
+# 🚀 Roadmap & Known Issues
+
+## Things to Fix 🛠️
+
 - [ ] Reliably display authors.
 - [ ] Reliably display article photos.
 - [ ] Filter out non-news articles (theory, podcasts, etc.).
-- [x] A better GitHub README.
-
-### Features to Add ✨
-- [ ] Implement mobile swipe gestures to change article slides.

@@ -337,7 +337,7 @@
     onFilterChanged={(f) => { activeFilter = f; applyLogic(); drawerOpen = false; }}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}
     onShowAbout={() => { drawerOpen = false; aboutDialogOpen = true; }}
-    onShowGitHub={() => { window.open('https://github.com/C0smicCactus/TheRadical', '_blank', 'noopener,noreferrer'); }}
+    onShowGitHub={() => { window.open('https://github.com/C0smicCactus/TheRadicalWeb', '_blank', 'noopener,noreferrer'); }}
     onResetFeed={resetFeed}
     onClose={() => drawerOpen = false}
   />

@@ -16,7 +16,7 @@
           <span>PROJECT BRIEFING</span>
         </div>
         <h1 class="font-display text-4xl font-bold italic text-white">THE RADICAL</h1>
-        <div class="text-textMuted text-xs font-bold tracking-widest mt-1">v0.2.0</div>
+        <div class="text-textMuted text-xs font-bold tracking-widest mt-1">BETA</div>
       </div>
       <button onclick={onClose} class="text-white/60 hover:text-white" aria-label="Close modal">
         <i class="fa-solid fa-xmark text-lg"></i>
