@@ -42,43 +42,38 @@ export const feedParser = {
       let pubDateStr = pubDateMatch ? pubDateMatch[1] : '';
 
       const summaryMatch = content.match(/<summary.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>/i);
-      const descMatch = content.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i) ||
-                        content.match(/<content:encoded>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i);
+      const descTagMatch = content.match(/<description.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
+      const contentEncodedMatch = content.match(/<content:encoded.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i) || 
+                                  content.match(/<content.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content>/i);
 
       let summary = summaryMatch ? summaryMatch[1] : '';
-      let description = descMatch ? descMatch[1] : '';
-      let bestDesc = summary.trim().length > 0 ? summary : description;
+      let descTag = descTagMatch ? descTagMatch[1] : '';
+      let contentEncoded = contentEncodedMatch ? contentEncodedMatch[1] : '';
 
-      // Extract author
-      let authorMatch = content.match(/<author[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/author>/i);
-      let author = authorMatch ? authorMatch[1] : '';
+      let bestDesc = summary.trim().length > 0 ? summary : descTag;
+      if (!bestDesc && contentEncoded) bestDesc = contentEncoded;
+      
+      const searchContent = `${summary} ${descTag} ${contentEncoded}`;
 
-      if (!author) {
-        let creatorMatch = content.match(/<dc:creator[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/i);
-        author = creatorMatch ? creatorMatch[1] : '';
-      }
-      if (!author) {
-        let nameMatch = content.match(/<author[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i);
-        author = nameMatch ? nameMatch[1] : '';
-      }
-
-      if (!author) {
-        const byMatch = content.match(/\bby\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b/i);
-        if (byMatch) {
-          author = byMatch[1].trim();
-        }
-        if (!author) {
-          const titleByMatch = title.match(/\bby\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b/i);
-          if (titleByMatch) {
-            author = titleByMatch[1].trim();
-          }
+      let authorTagContent = '';
+      const authorRegexes = [
+        /<dc:creator[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/i,
+        /<author[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i,
+        /<author[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/author>/i,
+        /<contributor[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i
+      ];
+      for (const reg of authorRegexes) {
+        const authMatch = content.match(reg);
+        if (authMatch && authMatch[1]) {
+          authorTagContent = authMatch[1];
+          break;
         }
       }
 
-      author = this.cleanHtml(author.trim());
+      let author = this.extractAuthor(authorTagContent, title, searchContent, sourceName);
 
       const tags = [];
-      const textLower = `${title} ${bestDesc}`.toLowerCase();
+      const textLower = `${title} ${bestDesc} ${searchContent}`.toLowerCase();
       const titleLower = title.toLowerCase();
 
       for (const topic of appTopics) {
@@ -103,7 +98,7 @@ export const feedParser = {
         }
       }
 
-      const scrapedImg = this.scrapeImage(content + bestDesc);
+      const scrapedImg = this.scrapeImage(searchContent || bestDesc);
 
       const article = new Article({
         title,
@@ -121,12 +116,90 @@ export const feedParser = {
         results.push(article);
       }
 
-      // Stop parsing early if we've reached the limit
       if (maxArticles !== null && results.length >= maxArticles) {
         break;
       }
     }
     return results;
+  },
+
+  extractAuthor(authorTag, title, content, sourceName) {
+    let author = this.cleanHtml(authorTag || '').trim();
+
+    if (author.toLowerCase().startsWith('by ')) {
+      author = author.substring(3).trim();
+    }
+
+    // Handle generic email formatted authors (e.g. email@example.com (John Doe))
+    const emailMatch = author.match(/^[^\s]+@[^\s]+\s+\(([^)]+)\)$/);
+    if (emailMatch) {
+      author = emailMatch[1].trim();
+    }
+
+    const isInvalidAuthor = (name) => {
+      if (!name) return true;
+      const lower = name.toLowerCase();
+      if (lower.includes('@') || lower.includes('http')) return true;
+      const genericTerms = ['admin', 'editor', 'staff', 'news desk', 'webmaster', 'contributor', 'publisher', 'team', 'newsroom'];
+      if (genericTerms.some(x => lower.includes(x))) return true;
+      if (lower === sourceName.toLowerCase() || lower.includes(sourceName.toLowerCase())) return true;
+      return false;
+    };
+
+    // If we already have a valid, named author tag, accept it and skip Regex extraction
+    if (author && !isInvalidAuthor(author)) {
+      if (author === author.toUpperCase()) {
+        author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+      return author;
+    }
+
+    // Fallback: Use Regex on text contents to find explicit byline
+    let extractedFromText = '';
+    const plainText = this.cleanHtml(content);
+
+    // Matches localized Title Cased names
+    const namePattern = "([A-Z\u00C0-\u017F][a-zA-Z\u00C0-\u017F\\-'.]+(?:\\s+[A-Z\u00C0-\u017F][a-zA-Z\u00C0-\u017F\\-'.]+){1,3})";
+    const byRegexes = [
+      new RegExp(`(?:^|\\n|\\s)(?:[Ww]ords|[Ww]ritten|[Rr]eport|[Rr]eview)\\s+(?:[Bb]y)\\s*:?\\s*${namePattern}\\b`),
+      new RegExp(`(?:^|\\n|\\s)(?:[Bb]y)\\s*:?\\s*${namePattern}\\b`),
+      new RegExp(`^${namePattern}\\b(?=\\s*[-—|])`)
+    ];
+
+    for (const reg of byRegexes) {
+      const textsToSearch = [title, plainText];
+      for (const text of textsToSearch) {
+        const match = text.match(reg);
+        if (match && match[1]) {
+          const possibleName = match[1].trim();
+          const lowerName = possibleName.toLowerCase();
+          
+          // Guard against false positives like "By Sunday", "By The Government"
+          const invalidWords = [
+            'the', 'this', 'that', 'a', 'an', 'our', 'some', 'any', 'no', 'in',
+            'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 
+            'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december',
+            'yesterday', 'today', 'tomorrow', 'admin', 'staff', 'editor', 'associated', 'reuters', 'aap', 'guest', 'contributor', 'correspondent'
+          ];
+          
+          const firstWord = lowerName.split(' ')[0];
+          if (!invalidWords.includes(firstWord) && !isInvalidAuthor(possibleName)) {
+            extractedFromText = possibleName;
+            break;
+          }
+        }
+      }
+      if (extractedFromText) break;
+    }
+
+    author = extractedFromText;
+
+    // Convert All-Caps found strings to normal Title Case
+    if (author && author === author.toUpperCase()) {
+      author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+
+    return author;
   },
 
   async scrapeUrlForImage(url, signal) {
@@ -198,10 +271,12 @@ export const feedParser = {
 
   cleanHtml(input) {
     if (!input) return "";
+    // Replace block-level tags and line breaks with space to avoid word merging
     let result = input
-      .replace(/<!\[CDATA\[|\]\]>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/amp;nbsp/g, ' ');
+      .replace(/<!\[CDATA\[|\]\]>/gi, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/amp;nbsp/gi, ' ')
+      .replace(/<\/?(p|br|div|h[1-6]|li|ul|ol|table|tr|td|th|blockquote)[^>]*>/gi, ' ');
 
     let prev;
     let limit = 0;
@@ -215,7 +290,7 @@ export const feedParser = {
           limit++;
         } while (result !== prev && limit < 3);
       } catch (e) {
-        // Fallback below
+        // Fallback before
       }
     }
 
@@ -226,7 +301,7 @@ export const feedParser = {
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
-      .replace(/<[^>]*>/g, '')
+      .replace(/<[^>]*>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
