@@ -8,14 +8,14 @@
   <a href="https://c0smiccactus.github.io/TheRadicalWeb/"><strong>🌍 View Live Site</strong></a>
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/Svelte-5-ff3e00?logo=svelte&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-Beta-orange" />
-  <img src="https://img.shields.io/badge/Feeds-35-success" />
-  <a href="https://www.gnu.org/licenses/gpl-3.0">
-    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPLv3 License">
-  </a>
-</p>
+<div align="center">
+  <img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge&color=ff7070">
+  <img src="https://img.shields.io/badge/Feeds-35-green?style=for-the-badge&color=4ac6b7">
+  <img src="https://img.shields.io/github/repo-size/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=ff7070">
+  <img src="https://img.shields.io/github/stars/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=965f8a">
+  <img src="https://img.shields.io/github/license/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=4ac6b7">
+</div>
 
 *This is a Svelte port of the Flutter project,
 [The Radical](https://github.com/C0smicCactus/TheRadical).*
@@ -32,6 +32,9 @@
 ---
 
 ## 💡 Motivation
+
+> "For many people an issue does not exist until it appears in the news media. How we view issues, indeed, what we even define as an issue or event, what we see and hear, and what we do not see and hear are greatly determined by those who control the communications world."
+> — Michael Parenti
 
 The Radical was born out of a need to centralise news from leftist and independent perspectives without the friction of checking dozens of separate websites. In the current media landscape, independent voices are often scattered; this dashboard brings them into a single, cohesive interface.
 

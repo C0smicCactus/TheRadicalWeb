@@ -24,5 +24,51 @@ export const appUtils = {
     } else {
       return formattedDate;
     }
+  },
+
+  /**
+   * Creates a debounced version of a function that delays invocation until after `wait` milliseconds.
+   * Invokes the function immediately on the first call, then queues subsequent calls.
+   * The debounced function has a `flush()` method to force immediate execution.
+   *
+   * @param {Function} fn - The function to debounce
+   * @param {number} wait - Wait time in milliseconds (default: 1000)
+   * @returns {Function} Debounced function with `flush()` method
+   */
+  debounce(fn, wait = 1000) {
+    let timeoutId;
+    let pendingArgs;
+
+    const debounced = function (...args) {
+      pendingArgs = args;
+
+      if (!timeoutId) {
+        fn.apply(this, args);
+      }
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        if (pendingArgs) {
+          fn.apply(this, pendingArgs);
+        }
+      }, wait);
+    };
+
+    debounced.flush = function () {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    debounced.cancel = function () {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    return debounced;
   }
 };

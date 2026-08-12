@@ -4,8 +4,11 @@ import { appTopics } from '$lib/core/appTopics.js';
 import { networkConfig } from '$lib/core/networkConfig.js';
 import { feedFilterRules } from '$lib/core/feedFilterRules.js';
 
+// Shared image scraping cache to deduplicate requests across all components
+const imageScrapeCache = new Map();
+
 export const feedParser = {
-  parse(rawXml, sourceName) {
+  parse(rawXml, sourceName, maxArticles = null) {
     if (!rawXml) return [];
     const results = [];
     const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
@@ -117,29 +120,67 @@ export const feedParser = {
       if (!feedFilterRules.shouldExcludeArticle(article)) {
         results.push(article);
       }
+
+      // Stop parsing early if we've reached the limit
+      if (maxArticles !== null && results.length >= maxArticles) {
+        break;
+      }
     }
     return results;
   },
 
-  async scrapeUrlForImage(url) {
+  async scrapeUrlForImage(url, signal) {
     if (!url) return "";
-    try {
-      const finalUrl = networkConfig.wrapCorsProxy(url);
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), networkConfig.imageScrapeTimeoutMs);
-      const res = await fetch(finalUrl, { signal: controller.signal });
-      clearTimeout(id);
 
-      if (res.ok) {
-        const text = await res.text();
-        const ogMatch = text.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
-                        text.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-        return ogMatch ? ogMatch[1] : "";
-      }
-    } catch (e) {
-      // Ignored
+    // Deduplication: return existing promise if already scraping this URL
+    if (imageScrapeCache.has(url)) {
+      return imageScrapeCache.get(url);
     }
-    return "";
+
+    const promise = (async () => {
+      try {
+        const finalUrl = networkConfig.wrapCorsProxy(url);
+        const controller = new AbortController();
+        // Use provided signal or create internal one
+        const abortSignal = signal || controller.signal;
+        const timeoutId = setTimeout(() => controller.abort(), networkConfig.imageScrapeTimeoutMs);
+
+        // Listen for external abort (e.g., component unmount)
+        if (signal) {
+          signal.addEventListener('abort', () => controller.abort());
+        }
+
+        const res = await fetch(finalUrl, { signal: abortSignal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const text = await res.text();
+          const ogMatch = text.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+                          text.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+          const result = ogMatch ? ogMatch[1] : "";
+          // Cache the result (not the promise) for future requests
+          imageScrapeCache.set(url, Promise.resolve(result));
+          return result;
+        }
+      } catch (e) {
+        // On error, remove from cache so future requests can retry
+        imageScrapeCache.delete(url);
+        // Ignored
+      }
+      return "";
+    })();
+
+    imageScrapeCache.set(url, promise);
+    return promise;
+  },
+
+  // Clear a URL from the scrape cache (useful for cleanup or manual refresh)
+  clearImageScrapeCache(url) {
+    if (url) {
+      imageScrapeCache.delete(url);
+    } else {
+      imageScrapeCache.clear();
+    }
   },
 
   parseDate(s) {

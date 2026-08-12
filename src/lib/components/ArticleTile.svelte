@@ -1,83 +1,25 @@
 <script>
+  import { onMount } from 'svelte';
   import { appUtils } from '$lib/core/appUtils.js';
   import { feedParser } from '$lib/services/feedParser.js';
+  import { useSwipeGesture } from '$lib/core/useSwipeGesture.svelte.js';
 
   let { article, primaryColor, onArticleOpen } = $props();
 
   let currentIndex = $state(0);
   let finalThumbnail = $state(undefined);
 
-  // Swipe gesture state
-  let touchStartX = $state(0);
-  let touchStartY = $state(0);
-  let touchCurrentX = $state(0);
-  let isSwiping = $state(false);
-  let swipeDirection = $state('');
-
-  // Minimum distance in pixels to register a swipe
-  const SWIPE_THRESHOLD = 50;
-  // Maximum Y movement allowed during swipe (to distinguish from vertical scrolling)
-  const SWIPE_Y_THRESHOLD = 100;
-
-  function handleTouchStart(e) {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    isSwiping = true;
-    swipeDirection = '';
-  }
-
-  function handleTouchMove(e) {
-    if (!isSwiping) return;
-
-    touchCurrentX = e.touches[0].clientX;
-    const deltaX = touchCurrentX - touchStartX;
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-
-    // If vertical movement is too large, cancel swipe (user is scrolling)
-    if (deltaY > SWIPE_Y_THRESHOLD) {
-      isSwiping = false;
-      swipeDirection = '';
-      return;
-    }
-
-    // Determine swipe direction
-    if (Math.abs(deltaX) > 10) {
-      swipeDirection = deltaX > 0 ? 'right' : 'left';
-    }
-  }
-
-  function handleTouchEnd(e) {
-    if (!isSwiping) return;
-
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-
-    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-      if (deltaX > 0) {
-        // Swiped right -> go to previous slide
+  // Swipe gesture composable
+  const swipe = useSwipeGesture({
+    threshold: 50,
+    yThreshold: 100,
+    onSwipe: (direction) => {
+      if (direction === 'right') {
         prevSlide();
       } else {
-        // Swiped left -> go to next slide
         nextSlide();
       }
     }
-
-    // Reset swipe state
-    isSwiping = false;
-    swipeDirection = '';
-    touchStartX = 0;
-    touchStartY = 0;
-    touchCurrentX = 0;
-  }
-
-  $effect(() => {
-    if (!finalThumbnail && article.link) {
-      feedParser.scrapeUrlForImage(article.link).then(scraped => {
-        if (scraped) finalThumbnail = feedParser.scrapeImage(scraped) ? feedParser.scrapeImage(scraped) : scraped;
-      });
-    }
-    return () => {
-      finalThumbnail = undefined;
-    };
   });
 
   function openLink(e) {
@@ -95,6 +37,25 @@
     if (e) e.stopPropagation();
     currentIndex = 0;
   }
+
+  onMount(() => {
+    let mounted = true;
+
+    if (!finalThumbnail && article.link) {
+      feedParser.scrapeUrlForImage(article.link).then(scraped => {
+        if (!mounted) return;
+
+        if (scraped) {
+          const extracted = feedParser.scrapeImage(scraped);
+          finalThumbnail = extracted || scraped;
+        }
+      });
+    }
+
+    return () => {
+      mounted = false;
+    };
+  });
 </script>
 
 <!-- svelte-ignore state_referenced_locally -->
@@ -102,10 +63,10 @@
 <div
   role="article"
   aria-roledescription="card"
-  class="w-[400px] h-[610px] flex flex-col select-none"
-  ontouchstart={handleTouchStart}
-  ontouchmove={handleTouchMove}
-  ontouchend={handleTouchEnd}
+  class="w-[400px] h-[610px] flex flex-col"
+  ontouchstart={swipe.handleTouchStart}
+  ontouchmove={swipe.handleTouchMove}
+  ontouchend={swipe.handleTouchEnd}
 >
   <!-- Author / Source Row -->
   <div class="flex items-center px-1 pb-2">
@@ -194,12 +155,12 @@
     </div>
 
     <!-- Swipe Feedback Indicator -->
-    {#if isSwiping && swipeDirection}
+    {#if swipe.isSwiping && swipe.swipeDirection}
       <div
         class="absolute inset-0 flex items-center justify-center pointer-events-none z-[30]"
-        style="opacity: {Math.min(Math.abs(touchCurrentX - touchStartX) / 150, 0.4)};"
+        style="opacity: {Math.min(Math.abs(swipe.touchEndX - swipe.touchStartX) / 150, 0.4)};"
       >
-        {#if swipeDirection === 'left'}
+        {#if swipe.swipeDirection === 'left'}
           <i class="fa-solid fa-arrow-left text-white text-4xl drop-shadow-lg"></i>
         {:else}
           <i class="fa-solid fa-arrow-right text-white text-4xl drop-shadow-lg"></i>

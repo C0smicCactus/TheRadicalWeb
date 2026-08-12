@@ -1,8 +1,10 @@
 <script>
+  import { untrack } from 'svelte';
   import { appUtils } from '$lib/core/appUtils.js';
   import { feedParser } from '$lib/services/feedParser.js';
+  import { useSwipeGesture } from '$lib/core/useSwipeGesture.svelte.js';
 
-  let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onClose } = $props();
+  let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onComplete, onClose } = $props();
 
   /* svelte-ignore state_referenced_locally */
   let currentIndex = $state(initialIndex);
@@ -11,12 +13,18 @@
   let animationFrame;
   let startTime;
 
-  // Swipe gesture state
-  let touchStartX = $state(0);
-  let touchStartY = $state(0);
-  let touchCurrentX = $state(0);
-  let isSwiping = $state(false);
-  let swipeDirection = $state(''); // 'left' or 'right'
+  // Swipe gesture composable
+  const swipe = useSwipeGesture({
+    threshold: 50,
+    yThreshold: 100,
+    onSwipe: (direction) => {
+      if (direction === 'right') {
+        prevStory();
+      } else {
+        nextStory();
+      }
+    }
+  });
 
   function loadThumb(index) {
     const article = articles[index];
@@ -52,10 +60,9 @@
     cancelAnimationFrame(animationFrame);
     if (currentIndex + 1 < articles.length) {
       currentIndex++;
-      loadThumb(currentIndex);
-      startStoryTimer();
     } else {
-      onClose();
+      if (onComplete) onComplete();
+      else if (onClose) onClose();
     }
   }
 
@@ -63,78 +70,26 @@
     cancelAnimationFrame(animationFrame);
     if (currentIndex > 0) {
       currentIndex--;
-      startStoryTimer();
-    } else {
-      startStoryTimer();
     }
   }
 
+  // Wrapped execution logic in `untrack` to prevent unintended loop resets
   $effect(() => {
-    loadThumb(currentIndex);
-    startStoryTimer();
+    const activeIndex = currentIndex;
+    
+    untrack(() => {
+      loadThumb(activeIndex);
+      startStoryTimer();
+    });
+    
     return () => {
       cancelAnimationFrame(animationFrame);
     };
   });
 
-  // Minimum distance in pixels to register a swipe
-  const SWIPE_THRESHOLD = 50;
-  // Maximum Y movement allowed during swipe (to distinguish from vertical scrolling)
-  const SWIPE_Y_THRESHOLD = 100;
-
-  function handleTouchStart(e) {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    isSwiping = true;
-    swipeDirection = '';
-  }
-
-  function handleTouchMove(e) {
-    if (!isSwiping) return;
-
-    touchCurrentX = e.touches[0].clientX;
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-    const deltaX = touchCurrentX - touchStartX;
-
-    // If vertical movement is too large, cancel swipe (user is scrolling)
-    if (deltaY > SWIPE_Y_THRESHOLD) {
-      isSwiping = false;
-      swipeDirection = '';
-      return;
-    }
-
-    // Determine swipe direction
-    if (Math.abs(deltaX) > 10) {
-      swipeDirection = deltaX > 0 ? 'right' : 'left';
-    }
-  }
-
-  function handleTouchEnd() {
-    if (!isSwiping) return;
-
-    const deltaX = touchCurrentX - touchStartX;
-
-    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-      if (deltaX > 0) {
-        // Swiped right -> go to previous story
-        prevStory();
-      } else {
-        // Swiped left -> go to next story
-        nextStory();
-      }
-    }
-
-    // Reset swipe state
-    isSwiping = false;
-    swipeDirection = '';
-    touchStartX = 0;
-    touchStartY = 0;
-    touchCurrentX = 0;
-  }
-
   function handleTap(e) {
     // Don't process tap if a swipe occurred
-    if (swipeDirection || isSwiping) return;
+    if (swipe.swipeDirection || swipe.isSwiping) return;
 
     const width = window.innerWidth;
     const x = e.clientX;
@@ -155,17 +110,17 @@
 <div
   class="fixed inset-0 bg-black z-50 flex flex-col cursor-pointer select-none"
   onclick={handleTap}
-  ontouchstart={handleTouchStart}
-  ontouchmove={handleTouchMove}
-  ontouchend={handleTouchEnd}
+  ontouchstart={swipe.handleTouchStart}
+  ontouchmove={swipe.handleTouchMove}
+  ontouchend={swipe.handleTouchEnd}
 >
   <!-- Swipe Feedback Indicator -->
-  {#if isSwiping && swipeDirection}
+  {#if swipe.isSwiping && swipe.swipeDirection}
     <div
       class="absolute inset-0 flex items-center justify-center pointer-events-none z-[60]"
-      style="opacity: {Math.min(Math.abs(touchCurrentX - touchStartX) / 150, 0.5)};"
+      style="opacity: {Math.min(Math.abs(swipe.touchEndX - swipe.touchStartX) / 150, 0.5)};"
     >
-      {#if swipeDirection === 'left'}
+      {#if swipe.swipeDirection === 'left'}
         <i class="fa-solid fa-arrow-left text-white text-6xl drop-shadow-lg"></i>
       {:else}
         <i class="fa-solid fa-arrow-right text-white text-6xl drop-shadow-lg"></i>
@@ -188,7 +143,7 @@
   </div>
 
   <!-- UI Content Overlay -->
-  <div class="relative z-10 flex flex-col h-full pt-safe-top">
+  <div class="relative z-10 flex flex-col h-full pt-safe-top select-text">
     <!-- Story Segment Progress Indicators -->
     <div class="flex px-3 pt-3 space-x-1">
       {#each articles as _, i}

@@ -25,14 +25,14 @@
 
 {#if tabIndex === 1}
   <!-- Videos Tab Placeholder -->
-  <div class="flex-1 flex flex-col items-center justify-center p-8 select-none">
+  <div class="flex-1 flex flex-col items-center justify-center p-8">
     <i class="fa-solid fa-video-slash text-4xl mb-5" style="color: {primaryColor}4D;"></i>
     <div class="font-display font-bold tracking-widest text-lg mb-1.5 uppercase">VIDEO SIGNALS OFFLINE</div>
     <div class="text-textMuted text-xs">Future feature currently in development.</div>
   </div>
 {:else if isLoading}
   <!-- Initial Load Progress State -->
-  <div class="flex-1 flex flex-col items-center justify-center p-8 select-none">
+  <div class="flex-1 flex flex-col items-center justify-center p-8">
     <div
       class="w-12 h-12 border-4 rounded-full animate-spin mb-6"
       style="border-color: {primaryColor}; border-top-color: transparent;"

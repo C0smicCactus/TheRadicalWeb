@@ -20,6 +20,8 @@
   let showResetConfirm = $state(false);
   let customColorDialogOpen = $state(false);
 
+  const filterOptions = ["ALL", ...appTopics.map(t => t.name)];
+
   function handleExtendedChange(e) {
     const target = /** @type {HTMLInputElement} */ (e.currentTarget);
     onExtendedModeChanged(target.checked);
@@ -89,7 +91,7 @@
   <div class="mt-6 pt-4 border-t border-white/5">
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-2.5 uppercase">TOPIC FILTERS</div>
     <div class="flex flex-col space-y-2">
-       {#each ["ALL", ...appTopics.map(t => t.name)] as filterName}
+       {#each filterOptions as filterName}
         <button
           onclick={() => onFilterChanged(filterName)}
           class="w-full text-left px-3.5 py-2 border transition-colors text-[11px] font-bold uppercase"

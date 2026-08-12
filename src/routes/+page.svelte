@@ -4,6 +4,7 @@
   import { networkConfig } from '$lib/core/networkConfig.js';
   import { feedParser } from '$lib/services/feedParser.js';
   import { appColors } from '$lib/core/appColors.js';
+  import { appUtils } from '$lib/core/appUtils.js';
   import { Article } from '$lib/models/Article.js';
 
   import DashboardHeader from '$lib/components/DashboardHeader.svelte';
@@ -96,8 +97,13 @@
     if (changed) persistViewedStories(cleanMap);
   }
 
+  // Fix #5: Debounce localStorage writes to reduce excessive I/O
+  const debouncedPersist = appUtils.debounce((data) => {
+    localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(data));
+  }, 1500);
+
   function persistViewedStories(mapData = viewedStoryMap) {
-    localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(mapData));
+    debouncedPersist(mapData);
   }
 
   function markStoryViewed(link) {
@@ -127,56 +133,66 @@
     const freshBatch = [];
     const entries = Object.entries(sources);
 
-    for (const [url, name] of entries) {
-      if (!isBackground) statusMessage = `Receiving: ${name}`;
-      try {
-        let text = '';
-        let ok = false;
+    // Fetch all feeds in parallel for faster initial load
+    const fetchPromises = entries.map(async ([url, name]) => {
+      let text = '';
+      let ok = false;
+      let usedProxy = '';
 
-        // Attempt 1: Primary CORS Proxy
+      // Try multiple CORS proxies in sequence
+      const maxAttempts = Math.min(networkConfig.maxProxyAttemptsPerFeed, networkConfig.corsProxies.length);
+
+      for (let attempt = 0; attempt < maxAttempts && !ok; attempt++) {
         try {
-          const fetchUrl = networkConfig.wrapCorsProxy(url, false);
+          const fetchUrl = networkConfig.wrapCorsProxy(url, attempt);
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), networkConfig.feedFetchTimeoutMs);
           const res = await fetch(fetchUrl, { signal: controller.signal });
           clearTimeout(id);
+
           if (res.ok) {
-            text = await res.text();
-            ok = true;
-          }
-        } catch (_) {}
-
-        // Attempt 2: Fallback CORS Proxy
-        if (!ok) {
-          try {
-            const fetchUrl = networkConfig.wrapCorsProxy(url, true);
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), networkConfig.feedFetchTimeoutMs);
-            const res = await fetch(fetchUrl, { signal: controller.signal });
-            clearTimeout(id);
-            if (res.ok) {
-              const resText = await res.text();
-              // allorigins.win returns JSON if using raw or wrapped
-              if (resText.startsWith('{') && resText.includes('"contents":')) {
-                const parsedJson = JSON.parse(resText);
-                text = parsedJson.contents || resText;
-              } else {
-                text = resText;
-              }
-              ok = true;
+            const resText = await res.text();
+            // Handle JSON responses (e.g., allorigins.win)
+            if (resText.startsWith('{') && resText.includes('"contents":')) {
+              const parsedJson = JSON.parse(resText);
+              text = parsedJson.contents || resText;
+            } else {
+              text = resText;
             }
-          } catch (_) {}
+            ok = true;
+            usedProxy = networkConfig.getProxyName(attempt);
+          }
+        } catch (_) {
+          // Try next proxy
         }
-
-        if (ok && text) {
-          const parsed = feedParser.parse(text, name);
-          freshBatch.push(...parsed);
-        }
-      } catch (_) {
-      } finally {
-        completedSources++;
       }
+
+      if (ok && text) {
+        // Limit articles per feed to speed up initial loading
+        const parsed = feedParser.parse(text, name, networkConfig.maxArticlesPerFeed);
+        freshBatch.push(...parsed);
+      }
+
+      completedSources++;
+    });
+
+    // Wait for all feeds to finish fetching in parallel with global timeout
+    const globalTimeout = networkConfig.globalFetchTimeoutMs; // 15s max total
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => resolve(false), globalTimeout);
+    });
+
+    const allDone = await Promise.race([
+      Promise.all(fetchPromises).then(() => true),
+      timeoutPromise
+    ]);
+
+    if (!allDone && !isBackground) {
+      statusMessage = allArticles.length > 0
+        ? `Timeout - showing ${allArticles.length} cached articles`
+        : "Timeout - showing available content";
     }
+
     processFetchedArticles(freshBatch);
   }
 
@@ -225,13 +241,15 @@
     showLoadMoreButton = false;
   }
 
-  function saveToCache() {
+  // Fix #5: Debounce cache saves to batch multiple updates
+  const debouncedSaveCache = appUtils.debounce((data) => {
     try {
-      localStorage.setItem(
-        networkConfig.offlineCacheKey,
-        JSON.stringify(allArticles.slice(0, networkConfig.maxCachedArticles).map(a => a.toMap()))
-      );
+      localStorage.setItem(networkConfig.offlineCacheKey, JSON.stringify(data));
     } catch (_) {}
+  }, 2000);
+
+  function saveToCache() {
+    debouncedSaveCache(allArticles.slice(0, networkConfig.maxCachedArticles).map(a => a.toMap()));
   }
 
   function loadMoreArticles() {
@@ -253,6 +271,9 @@
     viewedStoryMap = {};
     visibleCount = networkConfig.articlesPerPage;
     isLoading = true;
+    totalSources = 0;
+    completedSources = 0;
+    statusMessage = "Resetting...";
     fetchNews();
   }
 
