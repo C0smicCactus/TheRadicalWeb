@@ -37,10 +37,10 @@
     onclick={onClose}
     aria-label="Close custom color dialog overlay"
   ></button>
-  <div class="relative bg-appSurface border border-borderSubtle max-w-[450px] w-full p-8 flex flex-col z-10">
+  <div class="relative bg-appSurface border border-borderSubtle max-w-[450px] w-full p-8 flex flex-col z-10 rounded-xl shadow-2xl">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-black tracking-widest text-white uppercase">CUSTOM THEME COLOR</h2>
-      <button onclick={onClose} class="text-white/60 hover:text-white" aria-label="Close custom color modal">
+      <h2 class="text-sm font-black tracking-widest text-textMain uppercase">CUSTOM THEME COLOR</h2>
+      <button onclick={onClose} class="text-textMuted hover:text-textMain" aria-label="Close custom color modal">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
@@ -54,18 +54,18 @@
         value={hexInput}
         oninput={handleInput}
         placeholder="e.g. FF5733"
-        class="w-full bg-appBackground border border-borderSubtle focus:border-white text-center py-3 pl-10 pr-4 text-lg font-bold text-white uppercase outline-none"
+        class="w-full bg-appBackground border border-borderSubtle focus:border-textMain text-center py-3 pl-10 pr-4 text-lg font-bold text-textMain uppercase outline-none rounded"
       />
     </div>
 
     <div class="flex items-center space-x-3 mb-8">
       <span class="text-[10px] font-bold tracking-widest text-textSubtle uppercase">PREVIEW</span>
-      <div class="w-10 h-10 border-2 border-borderSubtle" style="background-color: {previewColor};"></div>
+      <div class="w-10 h-10 border-2 border-borderSubtle rounded shadow-sm" style="background-color: {previewColor};"></div>
     </div>
 
     <button
       onclick={apply}
-      class="w-full py-4 font-black tracking-widest text-black uppercase transition-opacity hover:opacity-90"
+      class="w-full py-4 font-black tracking-widest text-white uppercase transition-opacity hover:opacity-90 rounded"
       style="background-color: {previewColor};"
     >
       APPLY COLOR

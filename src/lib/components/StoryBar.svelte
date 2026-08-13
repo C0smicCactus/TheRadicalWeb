@@ -1,5 +1,4 @@
 <script>
-  import { appColors } from '$lib/core/appColors.js';
   import StoryViewer from '$lib/components/StoryViewer.svelte';
 
   let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
@@ -39,19 +38,16 @@
   let storyEntriesSnapshot = $state([]);
 
   function handleStoryComplete() {
-    // Find the next unviewed entry to show
     const nextIndex = storyEntriesSnapshot.findIndex(
       (entry, i) => i > activeEntryIndex && !entry.isFullyViewed
     );
 
     if (nextIndex !== -1) {
-      // Advance to the next organisation's stories
       const nextEntry = storyEntriesSnapshot[nextIndex];
       activeEntryIndex = nextIndex;
       const startIndex = Math.max(0, nextEntry.stories.findIndex(a => !viewedStoryLinks.has(a.link)));
       activeStoryData = { articles: nextEntry.stories, sourceName: nextEntry.source, initialIndex: startIndex };
     } else {
-      // No more stories left, fully exit story mode
       handleStoryClose();
     }
   }
@@ -64,7 +60,7 @@
 </script>
 
 {#if finalEntries.length > 0}
-  <div class="w-full border-b border-borderSubtle flex justify-center bg-appBackground">
+  <div class="w-full border-b border-borderSubtle flex justify-center bg-appBackground shadow-sm z-10">
     <div class="max-w-[1754px] w-full h-[135px] overflow-x-auto px-6 py-3 flex space-x-5 items-center scrollbar-none">
       {#each finalEntries as entry (entry.source)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -82,15 +78,15 @@
         >
           <div
             class="p-[3px] rounded-full border-2 transition-all"
-            style="border-color: {entry.isFullyViewed ? 'rgba(255,255,255,0.24)' : primaryColor};"
+            style="border-color: {entry.isFullyViewed ? 'var(--border-subtle)' : primaryColor};"
           >
             <div
-              class="w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center transition-opacity"
-              style="opacity: {entry.isFullyViewed ? 0.5 : 1};"
+              class="w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center transition-opacity border border-borderSubtle"
+              style="opacity: {entry.isFullyViewed ? 0.6 : 1};"
             >
               <span
                 class="font-black text-lg uppercase"
-                style="color: {entry.isFullyViewed ? 'rgba(255,255,255,0.38)' : primaryColor};"
+                style="color: {entry.isFullyViewed ? 'var(--text-subtle)' : primaryColor};"
               >
                 {entry.source.substring(0, entry.source.length > 2 ? 2 : 1)}
               </span>
@@ -98,7 +94,7 @@
           </div>
           <div
             class="mt-2 w-20 text-center truncate text-[9px] font-bold"
-            style="color: {entry.isFullyViewed ? appColors.textSubtle : appColors.textMuted};"
+            style="color: {entry.isFullyViewed ? 'var(--text-subtle)' : 'var(--text-main)'};"
           >
             {entry.source}
           </div>

@@ -4,6 +4,7 @@
   import { networkConfig } from '$lib/core/networkConfig.js';
   import { feedParser } from '$lib/services/feedParser.js';
   import { appColors } from '$lib/core/appColors.js';
+  import { appTopics } from '$lib/core/appTopics.js';
   import { appUtils } from '$lib/core/appUtils.js';
   import { Article } from '$lib/models/Article.js';
 
@@ -12,14 +13,16 @@
   import DashboardContentView from '$lib/components/DashboardContentView.svelte';
   import SourcesDialog from '$lib/components/dialogs/SourcesDialog.svelte';
   import AboutDialog from '$lib/components/dialogs/AboutDialog.svelte';
+  import CustomColorDialog from '$lib/components/dialogs/CustomColorDialog.svelte';
 
   let primaryColor = $state(appColors.themeChoices[0]);
   let innerWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  let isDark = $state(true);
 
   // App State
   let allArticles = $state([]);
   let displayList = $state([]);
-  let viewedStoryMap = $state({}); // Link -> ISO timestamp
+  let viewedStoryMap = $state({});
   let viewedStoryLinks = $derived(new Set(Object.keys(viewedStoryMap)));
   let visibleCount = $state(networkConfig.articlesPerPage);
   let tabIndex = $state(0);
@@ -41,9 +44,16 @@
   let drawerOpen = $state(false);
   let sourcesDialogOpen = $state(false);
   let aboutDialogOpen = $state(false);
+  let customColorDialogOpen = $state(false);
 
   async function bootSequence() {
     try {
+      if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        isDark = false;
+      } else {
+        isDark = true;
+      }
+
       const colorVal = localStorage.getItem('theme_color');
       if (colorVal) primaryColor = colorVal;
 
@@ -81,6 +91,17 @@
     fetchNews(allArticles.length > 0);
   }
 
+  function toggleTheme() {
+    isDark = !isDark;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }
+
   function cleanupOldStories(mapData) {
     const now = new Date();
     let changed = false;
@@ -97,7 +118,6 @@
     if (changed) persistViewedStories(cleanMap);
   }
 
-  // Fix #5: Debounce localStorage writes to reduce excessive I/O
   const debouncedPersist = appUtils.debounce((data) => {
     localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(data));
   }, 1500);
@@ -133,13 +153,11 @@
     const freshBatch = [];
     const entries = Object.entries(sources);
 
-    // Fetch all feeds in parallel for faster initial load
     const fetchPromises = entries.map(async ([url, name]) => {
       let text = '';
       let ok = false;
       let usedProxy = '';
 
-      // Try multiple CORS proxies in sequence
       const maxAttempts = Math.min(networkConfig.maxProxyAttemptsPerFeed, networkConfig.corsProxies.length);
 
       for (let attempt = 0; attempt < maxAttempts && !ok; attempt++) {
@@ -152,7 +170,6 @@
 
           if (res.ok) {
             const resText = await res.text();
-            // Handle JSON responses (e.g., allorigins.win)
             if (resText.startsWith('{') && resText.includes('"contents":')) {
               const parsedJson = JSON.parse(resText);
               text = parsedJson.contents || resText;
@@ -162,13 +179,10 @@
             ok = true;
             usedProxy = networkConfig.getProxyName(attempt);
           }
-        } catch (_) {
-          // Try next proxy
-        }
+        } catch (_) {}
       }
 
       if (ok && text) {
-        // Limit articles per feed to speed up initial loading
         const parsed = feedParser.parse(text, name, networkConfig.maxArticlesPerFeed);
         freshBatch.push(...parsed);
       }
@@ -176,11 +190,8 @@
       completedSources++;
     });
 
-    // Wait for all feeds to finish fetching in parallel with global timeout
-    const globalTimeout = networkConfig.globalFetchTimeoutMs; // 15s max total
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => resolve(false), globalTimeout);
-    });
+    const globalTimeout = networkConfig.globalFetchTimeoutMs;
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(false), globalTimeout));
 
     const allDone = await Promise.race([
       Promise.all(fetchPromises).then(() => true),
@@ -210,23 +221,19 @@
   function applyLogic() {
     let filtered = allArticles;
 
-    // 1. Topic Filter
     if (activeFilter !== "ALL") {
       filtered = filtered.filter(a => a.topics.includes(activeFilter));
     }
 
-    // 2. Extended Coverage
     if (!extendedMode) {
       const extendedNames = new Set(Object.values(appFeeds.extendedSources));
       filtered = filtered.filter(a => !extendedNames.has(a.source));
     }
 
-    // 3. Manual Signal Source Filter
     if (!allSourcesEnabled) {
       filtered = filtered.filter(a => enabledSources.has(a.source));
     }
 
-    // 4. Search Query
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(a =>
@@ -241,7 +248,6 @@
     showLoadMoreButton = false;
   }
 
-  // Fix #5: Debounce cache saves to batch multiple updates
   const debouncedSaveCache = appUtils.debounce((data) => {
     try {
       localStorage.setItem(networkConfig.offlineCacheKey, JSON.stringify(data));
@@ -294,6 +300,8 @@
   <DashboardHeader
     width={innerWidth}
     {primaryColor}
+    {isDark}
+    onToggleTheme={toggleTheme}
     bind:searchQuery
     onSearchChanged={() => applyLogic()}
     onLogoTap={() => { activeFilter = "ALL"; searchQuery = ""; applyLogic(); }}
@@ -319,26 +327,33 @@
     {statusMessage}
     onRefresh={() => fetchNews()}
     onLoadMore={loadMoreArticles}
+    appTopics={appTopics}
+    themeChoices={appColors.themeChoices}
+    onThemeChanged={updateTheme}
+    extendedMode={extendedMode}
+    onExtendedModeChanged={(v) => { extendedMode = v; localStorage.setItem('extended_coverage', v); applyLogic(); if (v) fetchNews(); }}
+    activeFilter={activeFilter}
+    onFilterChanged={(f) => { activeFilter = f; applyLogic(); drawerOpen = false; }}
+    onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}
+    onShowAbout={() => { drawerOpen = false; aboutDialogOpen = true; }}
+    onShowGitHub={() => { window.open('https://github.com/C0smicCactus/TheRadicalWeb', '_blank', 'noopener,noreferrer'); }}
+    onResetFeed={resetFeed}
+    onCustomColor={() => customColorDialogOpen = true}
   />
 
-  <!-- Bottom Navigation Bar -->
-  <nav class="flex items-center justify-around bg-appBackground border-t border-borderSubtle py-2.5 z-20 select-none">
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- Bottom Navigation Bar (Hidden on Desktop) -->
+  <nav class="md:hidden flex items-center justify-around bg-appBackground border-t border-borderSubtle py-2.5 z-20 select-none">
     <button
       class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-none"
-      style="color: {tabIndex === 0 ? primaryColor : 'rgba(255,255,255,0.38)'}"
+      style="color: {tabIndex === 0 ? primaryColor : 'var(--text-subtle)'}"
       onclick={() => tabIndex = 0}
     >
       <i class="fa-solid fa-house text-base mb-1"></i>
       <span class="text-[10px] font-bold tracking-wider">Home</span>
     </button>
-
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <button
       class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-none"
-      style="color: {tabIndex === 1 ? primaryColor : 'rgba(255,255,255,0.38)'}"
+      style="color: {tabIndex === 1 ? primaryColor : 'var(--text-subtle)'}"
       onclick={() => tabIndex = 1}
     >
       <i class="fa-solid fa-play text-base mb-1"></i>
@@ -360,6 +375,7 @@
     onShowAbout={() => { drawerOpen = false; aboutDialogOpen = true; }}
     onShowGitHub={() => { window.open('https://github.com/C0smicCactus/TheRadicalWeb', '_blank', 'noopener,noreferrer'); }}
     onResetFeed={resetFeed}
+    onCustomColor={() => { drawerOpen = false; customColorDialogOpen = true; }}
     onClose={() => drawerOpen = false}
   />
 {/if}
@@ -384,4 +400,12 @@
 
 {#if aboutDialogOpen}
   <AboutDialog {primaryColor} onClose={() => aboutDialogOpen = false} />
+{/if}
+
+{#if customColorDialogOpen}
+  <CustomColorDialog
+    currentColor={primaryColor}
+    onColorSelected={(newColor) => updateTheme(newColor)}
+    onClose={() => customColorDialogOpen = false}
+  />
 {/if}

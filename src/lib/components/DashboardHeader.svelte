@@ -1,28 +1,29 @@
 <script>
-  let { width, primaryColor, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings } = $props();
+  let { width, primaryColor, isDark, onToggleTheme, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings } = $props();
 </script>
 
 <header class="flex flex-col w-full z-20">
   <!-- Beta Banner -->
   <div class="w-full py-1.5 text-center" style="background-color: {primaryColor};">
-    <span class="text-appBackground text-[10px] font-black tracking-widest uppercase">
+    <span class="text-white drop-shadow text-[10px] font-black tracking-widest uppercase">
       THIS WEBSITE IS STILL IN BETA — DEVELOPMENT IN PROGRESS
     </span>
   </div>
 
   <!-- Navigation Bar -->
   <div class="w-full bg-appBackground border-b border-borderSubtle">
-    <div class="max-w-[1800px] mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="max-w-[1754px] mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      
       <!-- Brand Logo -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none" style="color: {primaryColor};" onclick={onLogoTap}>
+      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none flex-shrink-0" style="color: {primaryColor};" onclick={onLogoTap}>
         {width > 500 ? "THE RADICAL" : "TR"}
       </div>
 
       <!-- Search Interface -->
-      <div class="flex-1 max-w-[600px] mx-5">
-        <div class="relative flex items-center bg-highlightOverlay rounded-full px-4 py-2 border border-transparent focus-within:border-white/20">
+      <div class="flex-1 max-w-[600px] mx-auto">
+        <div class="relative flex items-center bg-highlightOverlay rounded-full px-4 py-2 border border-borderSubtle focus-within:border-white/20">
           <i class="fa-solid fa-magnifying-glass text-textMuted text-xs mr-3"></i>
           <input
             type="text"
@@ -34,16 +35,26 @@
         </div>
       </div>
 
-      <!-- Settings Button -->
-      <button
-        onclick={onOpenSettings}
-        class="flex items-center justify-center bg-highlightOverlay border border-borderSubtle rounded-full px-4 py-2 text-textMain hover:bg-white/10 transition-colors"
-      >
-        {#if width > 700}
-          <span class="text-[10px] font-bold mr-2.5 tracking-wider">SETTINGS</span>
-        {/if}
-        <i class="fa-solid fa-sliders text-xs" style="color: {primaryColor};"></i>
-      </button>
+      <!-- Actions -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- Theme Toggle -->
+        <button
+          onclick={onToggleTheme}
+          class="flex items-center justify-center bg-highlightOverlay border border-borderSubtle rounded-full w-9 h-9 text-textMain hover:bg-highlightOverlay transition-colors"
+          aria-label="Toggle Light/Dark Theme"
+        >
+          <i class="fa-solid {isDark ? 'fa-sun' : 'fa-moon'} text-xs"></i>
+        </button>
+
+        <!-- Settings Button (Hidden on Desktop, moved to Sidebar) -->
+        <button
+          onclick={onOpenSettings}
+          class="md:hidden flex items-center justify-center bg-highlightOverlay border border-borderSubtle rounded-full w-9 h-9 text-textMain hover:bg-highlightOverlay transition-colors"
+        >
+          <i class="fa-solid fa-sliders text-xs" style="color: {primaryColor};"></i>
+        </button>
+      </div>
+
     </div>
   </div>
 </header>
