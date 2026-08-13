@@ -8,6 +8,7 @@
     primaryColor, displayList, allArticles, viewedStoryLinks,
     onStoryViewed, onArticleOpen, statusMessage, onRefresh, onLoadMore,
     appTopics, themeChoices, onThemeChanged, extendedMode, onExtendedModeChanged,
+    topicsEnabled, onTopicsEnabledChanged,
     activeFilter, onFilterChanged, onShowSources, onShowAbout, onShowGitHub,
     onResetFeed, onCustomColor
   } = $props();
@@ -66,7 +67,7 @@
         <!-- Mobile view (Grid of 4:5 cards, hidden on md) -->
         <div class="md:hidden flex flex-wrap justify-center gap-6 w-full">
           {#each displayList.slice(0, visibleCount) as article (article.link)}
-            <ArticleTile {article} {primaryColor} {onArticleOpen} variant="mobile" />
+            <ArticleTile {article} {primaryColor} {onArticleOpen} variant="mobile" {topicsEnabled} />
           {/each}
         </div>
 
@@ -77,13 +78,13 @@
           <div class="flex-1 flex flex-col gap-8">
             <!-- Hero Article -->
             {#if displayList.length > 0}
-              <ArticleTile article={displayList[0]} {primaryColor} {onArticleOpen} variant="hero" />
+              <ArticleTile article={displayList[0]} {primaryColor} {onArticleOpen} variant="hero" {topicsEnabled} />
             {/if}
             
             <!-- Grid of remaining articles -->
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {#each displayList.slice(1, visibleCount) as article (article.link)}
-                <ArticleTile {article} {primaryColor} {onArticleOpen} variant="desktop" />
+                <ArticleTile {article} {primaryColor} {onArticleOpen} variant="desktop" {topicsEnabled} />
               {/each}
             </div>
             
@@ -121,8 +122,22 @@
               </div>
               <hr class="border-borderSubtle" />
 
+              <!-- Topics Feature Toggle -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold text-textMain">ENABLE TOPICS</div>
+                  <div class="text-[10px] text-textMuted">Show topics on articles and filters.</div>
+                  <div class="text-[9px] text-textMuted font-bold uppercase mt-1">(Beta - doesn't work properly)</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked={topicsEnabled} onchange={(e) => onTopicsEnabledChanged(/** @type {HTMLInputElement} */ (e.currentTarget).checked)} class="sr-only peer">
+                  <div class="w-9 h-5 bg-highlightOverlay border border-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {topicsEnabled ? primaryColor : ''}"></div>
+                </label>
+              </div>
+              <hr class="border-borderSubtle" />
+
               <!-- Topic Filters -->
-              <div>
+              <div style="opacity: {topicsEnabled ? 1 : 0.4}; pointer-events: {topicsEnabled ? 'auto' : 'none'};">
                 <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-3 uppercase">TOPIC FILTERS</div>
                 <div class="flex flex-col gap-2">
                   {#each ["ALL", ...appTopics.map(t => t.name)] as filterName}

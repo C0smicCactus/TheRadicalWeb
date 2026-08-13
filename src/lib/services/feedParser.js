@@ -148,10 +148,7 @@ export const feedParser = {
 
     // If we already have a valid, named author tag, accept it and skip Regex extraction
     if (author && !isInvalidAuthor(author)) {
-      if (author === author.toUpperCase()) {
-        author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-      }
-      return author;
+      // don't title case yet, do it at the end for all authors
     }
 
     // Fallback: Use Regex on text contents to find explicit byline
@@ -194,9 +191,18 @@ export const feedParser = {
 
     author = extractedFromText;
 
-    // Convert All-Caps found strings to normal Title Case
-    if (author && author === author.toUpperCase()) {
-      author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    // Force proper Title Case as requested - applies to ALL author names
+    if (author) {
+      author = author.split(' ').map(word => {
+        return word.split('-').map(part => {
+          if (!part) return '';
+          const quoteSplit = part.split("'");
+          if (quoteSplit.length > 1) {
+            return quoteSplit.map(q => q ? q.charAt(0).toUpperCase() + q.slice(1).toLowerCase() : '').join("'");
+          }
+          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }).join('-');
+      }).join(' ');
     }
 
     return author;

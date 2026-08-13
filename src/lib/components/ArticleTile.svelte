@@ -4,7 +4,7 @@
   import { feedParser } from '$lib/services/feedParser.js';
   import { useSwipeGesture } from '$lib/core/useSwipeGesture.svelte.js';
 
-  let { article, primaryColor, onArticleOpen, variant = "mobile" } = $props();
+  let { article, primaryColor, onArticleOpen, variant = "mobile", topicsEnabled = false } = $props();
 
   let currentIndex = $state(0);
   let finalThumbnail = $state(undefined);
@@ -101,6 +101,7 @@
           <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90"></div>
 
           <!-- Topic Badges -->
+          {#if topicsEnabled}
           <div class="absolute top-3 left-3 flex flex-col items-start gap-1 z-10 max-w-[200px]">
             {#each article.topics as topic}
               <div class="px-2 py-1 bg-white text-black text-[9px] font-bold uppercase tracking-wider shadow">
@@ -108,6 +109,7 @@
               </div>
             {/each}
           </div>
+          {/if}
 
           <!-- Source Badge -->
           <div
@@ -132,7 +134,7 @@
             <div class="mt-4 font-display font-black text-lg text-textMain leading-tight uppercase line-clamp-3 tracking-tighter">
               {article.title}
             </div>
-            <div class="mt-4 text-textMuted text-sm leading-relaxed max-h-[300px] overflow-y-auto pr-1">
+            <div class="mt-4 text-textMuted text-sm leading-relaxed line-clamp-6 pr-1">
               {article.description}
             </div>
           </div>
@@ -169,14 +171,19 @@
       <div class="text-[8px] text-textSubtle font-bold uppercase tracking-wider">
         {appUtils.formatRelativeDate(article.parsedDate)}
       </div>
-      <div class="mt-0.5 text-[13px] leading-snug text-textMain line-clamp-2">
+      <div class="mt-0.5 text-[13px] leading-[1.45em] max-h-[2.9em] text-textMain overflow-hidden relative">
         <span class="font-black text-[11px] mr-2 uppercase" style="color: {primaryColor};">
           {article.source}
         </span>
-        {article.description.substring(0, 85)}{article.description.length > 85 ? '...' : ''}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span class="text-textSubtle ml-1 cursor-pointer hover:underline" onclick={openLink}>more</span>
+        {article.description}
+        {#if article.description.length > 85}
+          <div class="absolute bottom-0 right-0 pl-8 pr-1 flex items-center text-[13px]" style="background: linear-gradient(to right, transparent, var(--bg-main) 35%, var(--bg-main) 100%);">
+            <span class="text-textMain">...</span>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <span class="text-textSubtle ml-1 cursor-pointer hover:underline" onclick={openLink}>more</span>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -207,7 +214,7 @@
     <div class="p-4 flex flex-col gap-2">
       <div class="flex items-center gap-2 text-[10px] text-textSubtle font-bold uppercase tracking-wider">
         <span>{appUtils.formatRelativeDate(article.parsedDate)}</span>
-        {#if article.topics.length > 0}
+        {#if topicsEnabled && article.topics.length > 0}
           <span class="w-1 h-1 rounded-full bg-textSubtle"></span>
           <span>{article.topics[0]}</span>
         {/if}
@@ -244,7 +251,7 @@
     <div class="flex flex-col justify-center lg:w-[40%] p-6 lg:p-8 gap-4 bg-appSurface">
       <div class="flex items-center gap-2 text-[11px] font-bold text-textSubtle uppercase tracking-wider">
         <span>{appUtils.formatRelativeDate(article.parsedDate)}</span>
-        {#if article.topics.length > 0}
+        {#if topicsEnabled && article.topics.length > 0}
           <span class="w-1 h-1 rounded-full bg-textSubtle"></span>
           <span style="color: {primaryColor};">{article.topics[0]}</span>
         {/if}

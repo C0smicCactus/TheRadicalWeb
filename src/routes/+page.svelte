@@ -35,6 +35,7 @@
 
   // Filter & Configuration State
   let extendedMode = $state(false);
+  let topicsEnabled = $state(false);
   let allSourcesEnabled = $state(true);
   let enabledSources = $state(new Set());
   let activeFilter = $state("ALL");
@@ -58,6 +59,7 @@
       if (colorVal) primaryColor = colorVal;
 
       extendedMode = localStorage.getItem('extended_coverage') === 'true';
+      topicsEnabled = localStorage.getItem('topics_enabled') === 'true';
       allSourcesEnabled = localStorage.getItem('all_sources_enabled') !== 'false';
 
       const savedSources = localStorage.getItem('enabled_sources');
@@ -332,6 +334,8 @@
     onThemeChanged={updateTheme}
     extendedMode={extendedMode}
     onExtendedModeChanged={(v) => { extendedMode = v; localStorage.setItem('extended_coverage', v); applyLogic(); if (v) fetchNews(); }}
+    topicsEnabled={topicsEnabled}
+    onTopicsEnabledChanged={(v) => { topicsEnabled = v; localStorage.setItem('topics_enabled', v); }}
     activeFilter={activeFilter}
     onFilterChanged={(f) => { activeFilter = f; applyLogic(); drawerOpen = false; }}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}
@@ -369,6 +373,8 @@
     onThemeChanged={updateTheme}
     {extendedMode}
     onExtendedModeChanged={(v) => { extendedMode = v; localStorage.setItem('extended_coverage', v); applyLogic(); if (v) fetchNews(); }}
+    topicsEnabled={topicsEnabled}
+    onTopicsEnabledChanged={(v) => { topicsEnabled = v; localStorage.setItem('topics_enabled', v); }}
     {activeFilter}
     onFilterChanged={(f) => { activeFilter = f; applyLogic(); drawerOpen = false; }}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}

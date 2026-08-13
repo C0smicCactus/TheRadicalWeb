@@ -8,6 +8,8 @@
     onThemeChanged,
     extendedMode,
     onExtendedModeChanged,
+    topicsEnabled,
+    onTopicsEnabledChanged,
     activeFilter,
     onFilterChanged,
     onShowSources,
@@ -49,14 +51,27 @@
 
   <div class="py-4 space-y-4">
     <!-- Extended Mode Switch -->
-    <div class="flex items-center justify-between py-1">
+  <div class="flex items-center justify-between py-1">
       <div>
         <div class="text-xs font-bold text-textMain">EXTENDED COVERAGE</div>
         <div class="text-[10px] text-textMuted">Include broader independent sources.</div>
       </div>
       <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" checked={extendedMode} onchange={handleExtendedChange} class="sr-only peer">
+        <input type="checkbox" checked={extendedMode} onchange={(e) => onExtendedModeChanged(/** @type {HTMLInputElement} */ (e.currentTarget).checked)} class="sr-only peer">
         <div class="w-9 h-5 bg-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {extendedMode ? primaryColor : ''}"></div>
+      </label>
+    </div>
+
+    <!-- Topics Toggle -->
+    <div class="flex items-center justify-between py-1">
+      <div>
+        <div class="text-xs font-bold text-textMain">ENABLE TOPICS</div>
+        <div class="text-[10px] text-textMuted">Show topics on articles and filters.</div>
+        <div class="text-[9px] text-textMuted font-bold uppercase mt-1">(Beta - doesn't work properly)</div>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" checked={topicsEnabled} onchange={(e) => onTopicsEnabledChanged(/** @type {HTMLInputElement} */ (e.currentTarget).checked)} class="sr-only peer">
+        <div class="w-9 h-5 bg-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {topicsEnabled ? primaryColor : ''}"></div>
       </label>
     </div>
   </div>
@@ -88,7 +103,7 @@
   </div>
 
   <!-- Topic Filters section -->
-  <div class="mt-6 pt-4 border-t border-white/5">
+  <div class="mt-6 pt-4 border-t border-white/5" style="opacity: {topicsEnabled ? 1 : 0.4}; pointer-events: {topicsEnabled ? 'auto' : 'none'};">
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-2.5 uppercase">TOPIC FILTERS</div>
     <div class="flex flex-col space-y-2">
        {#each filterOptions as filterName}
