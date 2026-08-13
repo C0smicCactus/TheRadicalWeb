@@ -11,7 +11,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=for-the-badge">
   <img src="https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge&color=ff7070">
-  <img src="https://img.shields.io/badge/Feeds-35-green?style=for-the-badge&color=4ac6b7">
+  <img src="https://img.shields.io/badge/Feeds-37-green?style=for-the-badge&color=4ac6b7">
   <img src="https://img.shields.io/github/repo-size/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=ff7070">
   <img src="https://img.shields.io/github/stars/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=965f8a">
   <img src="https://img.shields.io/github/license/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=4ac6b7">
@@ -42,13 +42,13 @@ The Radical was born out of a need to centralise news from leftist and independe
 
 # 📊 Feed Sources
 
-The Radical aggregates from **35 independent news sources**, organised into three categories:
+The Radical aggregates from **37 independent news sources**, organised into three categories:
 
 <table>
 <tr>
 <td valign="top" width="60%">
 
-## Core Sources (28)
+## Core Sources (30)
 
 - Picket Line
 - Green Left
@@ -78,6 +78,8 @@ The Radical aggregates from **35 independent news sources**, organised into thre
 - Militant Worker
 - Koori Mail
 - 3CR
+- Eureka Initiative
+- LabourStart
 
 </td>
 <td valign="top" width="40%">

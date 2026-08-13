@@ -16,7 +16,7 @@ export const appFeeds = {
     "https://www.thenews.coop/country/oceania/feed": "CO-OP NEWS",
     "https://seqldiww.org/category/australia/feed": "IWW (SOUTH EAST QUEENSLAND)",
     "https://freedomnews.org.uk/tag/australia/feed": "FREEDOM",
-    "https://disputesreport.substack.com/feed": "DISPUTES REPORT", // TODO: Look into breaking up the single post of many stories into multiple individual articles here.
+    "https://disputesreport.substack.com/feed": "DISPUTES REPORT",
     "https://overland.org.au/latest/feed": "OVERLAND",
     "https://au.spiritofeureka.org/category/fp-roktabs-showcase/feed": "SPIRIT OF EUREKA",
     "https://www.blackpeoplesunion.org/articles/rss.xml": "BLACK PEOPLES UNION",
@@ -30,7 +30,7 @@ export const appFeeds = {
     "https://koorimail.com/feed": "KOORI MAIL",
     "https://www.3cr.org.au/news.xml": "3CR",
     "https://revaus.org/category/australian-politics/feed": "EUREKA INITIATIVE",
-    "https://www.labourstart.org/rss/labourstart.au.xml": "LABOURSTART" // TODO: Will need to make a special exception for LabourStart whereby publishers already listed here will be ignored however others will show as "[PUBLISHER] via LABOURSTART".
+    "https://www.labourstart.org/rss/labourstart.au.xml": "LABOURSTART"
   },
   globalSources: {
     "https://jacobin.com/feed": "JACOBIN",

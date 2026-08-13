@@ -7,6 +7,21 @@ import { feedFilterRules } from '$lib/core/feedFilterRules.js';
 // Shared image scraping cache to deduplicate requests across all components
 const imageScrapeCache = new Map();
 
+// Cache registered hosts once
+let _registeredHosts = null;
+function getRegisteredHosts() {
+  if (_registeredHosts) return _registeredHosts;
+  const allFeedUrls = [
+    ...Object.keys(appFeeds.coreSources),
+    ...Object.keys(appFeeds.globalSources),
+    ...Object.keys(appFeeds.extendedSources)
+  ];
+  _registeredHosts = allFeedUrls.map(url => {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch(e) { return ''; }
+  }).filter(Boolean);
+  return _registeredHosts;
+}
+
 export const feedParser = {
   parse(rawXml, sourceName, maxArticles = null) {
     if (!rawXml) return [];
@@ -16,6 +31,8 @@ export const feedParser = {
 
     let items = [...rawXml.matchAll(itemRegex)];
     if (items.length === 0) items = [...rawXml.matchAll(atomRegex)];
+
+    const registeredHosts = getRegisteredHosts();
 
     for (const match of items) {
       const content = match[1] || '';
@@ -71,39 +88,81 @@ export const feedParser = {
       }
 
       let author = this.extractAuthor(authorTagContent, title, searchContent, sourceName);
+      let articleSourceName = sourceName;
 
-      const tags = [];
-      const textLower = `${title} ${bestDesc} ${searchContent}`.toLowerCase();
-      const titleLower = title.toLowerCase();
-
-      for (const topic of appTopics) {
-        let score = 0.0;
-        for (const kw of topic.keywords) {
-          const kwLower = kw.keyword.toLowerCase();
-          const isMultiWord = kwLower.includes(' ');
-
-          if (titleLower.includes(kwLower)) {
-            score += kw.weight * 3.0;
-            if (isMultiWord) score += 1.0;
-          }
-          if (textLower.includes(kwLower)) {
-            score += kw.weight * 1.0;
-            if (isMultiWord) score += 0.5;
-          }
+      // SPECIAL RULE: LABOURSTART
+      if (sourceName === "LABOURSTART") {
+        let itemHost = '';
+        try { itemHost = new URL(link.trim()).hostname.replace(/^www\./, ''); } catch(e) {}
+        
+        // Exclude if it overlaps closely with anything in our existing appFeeds array database
+        if (registeredHosts.includes(itemHost)) {
+          continue; 
         }
-
-        const hasExclusion = topic.exclusions.some(excl => textLower.includes(excl.toLowerCase()));
-        if (score >= topic.threshold && !hasExclusion) {
-          tags.push(topic.name);
+        
+        let publisher = "UNKNOWN PUBLISHER";
+        const pubMatch = bestDesc.match(/Source:\s*(.*?)(?:\s+http|<|$)/i);
+        if (pubMatch) {
+          publisher = pubMatch[1].trim().toUpperCase();
+        }
+        articleSourceName = `${publisher} via LABOURSTART`;
+        
+        // Clean up title wrapper format common for LabourStart
+        if (title.startsWith('Australia: ')) {
+          title = title.substring(11).trim();
         }
       }
 
+      // SPECIAL RULE: DISPUTES REPORT
+      if (sourceName === "DISPUTES REPORT" && (contentEncoded || bestDesc)) {
+        // Regex matches <h3> tag text and consumes everything up until another <h2> or <h3> section boundary
+        const h3Regex = /<h3[^>]*>(?:<span[^>]*>)?(.*?)(?:<\/span>)?<\/h3>([\s\S]*?)(?=<h[23]>|$)/gi;
+        let matchH3;
+        let hasSubArticles = false;
+        const fullHtmlContent = contentEncoded || bestDesc;
+        
+        while ((matchH3 = h3Regex.exec(fullHtmlContent)) !== null) {
+          hasSubArticles = true;
+          const subTitle = this.cleanHtml(matchH3[1]);
+          const subContent = matchH3[2];
+          const subDescText = this.cleanHtml(subContent);
+          
+          // Grabs the image isolated cleanly within this h3 -> block 
+          const subImg = this.scrapeImage(subContent);
+          const subTags = this.calculateTags(subTitle, subDescText, subContent);
+          
+          const subArticle = new Article({
+            title: subTitle,
+            link: link.trim(), // Link to the original collective post
+            source: articleSourceName, // "DISPUTES REPORT"
+            topics: subTags,
+            description: subDescText,
+            thumbnail: networkConfig.wrapImageProxy(subImg),
+            parsedDate: this.parseDate(pubDateStr),
+            author: author || null,
+            dominantColor: null
+          });
+          
+          if (!feedFilterRules.shouldExcludeArticle(subArticle)) {
+            results.push(subArticle);
+          }
+          
+          if (maxArticles !== null && results.length >= maxArticles) break;
+        }
+        
+        if (hasSubArticles) {
+          if (maxArticles !== null && results.length >= maxArticles) break;
+          continue; // Successfully split – Skip pushing the overarching "parent" article
+        }
+      }
+
+      const tags = this.calculateTags(title, bestDesc, searchContent);
       const scrapedImg = this.scrapeImage(searchContent || bestDesc);
 
       const article = new Article({
         title,
         link: link.trim(),
-        source: sourceName,
+        source: articleSourceName,
         topics: tags,
         description: this.cleanHtml(bestDesc),
         thumbnail: networkConfig.wrapImageProxy(scrapedImg),
@@ -121,6 +180,35 @@ export const feedParser = {
       }
     }
     return results;
+  },
+
+  calculateTags(title, descText, fullContent) {
+    const tags = [];
+    const textLower = `${title} ${descText} ${fullContent}`.toLowerCase();
+    const titleLower = title.toLowerCase();
+
+    for (const topic of appTopics) {
+      let score = 0.0;
+      for (const kw of topic.keywords) {
+        const kwLower = kw.keyword.toLowerCase();
+        const isMultiWord = kwLower.includes(' ');
+
+        if (titleLower.includes(kwLower)) {
+          score += kw.weight * 3.0;
+          if (isMultiWord) score += 1.0;
+        }
+        if (textLower.includes(kwLower)) {
+          score += kw.weight * 1.0;
+          if (isMultiWord) score += 0.5;
+        }
+      }
+
+      const hasExclusion = topic.exclusions.some(excl => textLower.includes(excl.toLowerCase()));
+      if (score >= topic.threshold && !hasExclusion) {
+        tags.push(topic.name);
+      }
+    }
+    return tags;
   },
 
   extractAuthor(authorTag, title, content, sourceName) {
@@ -145,11 +233,6 @@ export const feedParser = {
       if (lower === sourceName.toLowerCase() || lower.includes(sourceName.toLowerCase())) return true;
       return false;
     };
-
-    // If we already have a valid, named author tag, accept it and skip Regex extraction
-    if (author && !isInvalidAuthor(author)) {
-      // don't title case yet, do it at the end for all authors
-    }
 
     // Fallback: Use Regex on text contents to find explicit byline
     let extractedFromText = '';
@@ -189,7 +272,9 @@ export const feedParser = {
       if (extractedFromText) break;
     }
 
-    author = extractedFromText;
+    if (!author || isInvalidAuthor(author)) {
+      author = extractedFromText;
+    }
 
     // Force proper Title Case as requested - applies to ALL author names
     if (author) {
@@ -302,10 +387,10 @@ export const feedParser = {
 
     // Regex fallback for tags & entities
     result = result
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
       .replace(/&#39;/g, "'")
       .replace(/<[^>]*>/g, ' ')
       .replace(/\s+/g, ' ')
