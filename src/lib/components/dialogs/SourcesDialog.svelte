@@ -1,5 +1,5 @@
 <script>
-  import { appFeeds } from '$lib/core/appFeeds.js';
+  import { appFeeds } from '$lib/config/appFeeds.js';
 
   let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();
 

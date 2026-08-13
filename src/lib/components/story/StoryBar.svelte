@@ -1,5 +1,5 @@
 <script>
-  import StoryViewer from '$lib/components/StoryViewer.svelte';
+  import StoryViewer from '$lib/components/story/StoryViewer.svelte';
 
   let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
 

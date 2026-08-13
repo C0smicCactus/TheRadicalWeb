@@ -1,8 +1,8 @@
 import { Article } from '$lib/models/Article.js';
-import { appFeeds } from '$lib/core/appFeeds.js';
-import { appTopics } from '$lib/core/appTopics.js';
-import { networkConfig } from '$lib/core/networkConfig.js';
-import { feedFilterRules } from '$lib/core/feedFilterRules.js';
+import { appFeeds } from '$lib/config/appFeeds.js';
+import { appTopics } from '$lib/config/appTopics.js';
+import { networkConfig } from '$lib/config/networkConfig.js';
+import { feedFilterRules } from '$lib/utils/feedFilterRules.js';
 
 // Shared image scraping cache to deduplicate requests across all components
 const imageScrapeCache = new Map();
@@ -116,14 +116,17 @@ export const feedParser = {
       // SPECIAL RULE: DISPUTES REPORT
       if (sourceName === "DISPUTES REPORT" && (contentEncoded || bestDesc)) {
         // Regex matches <h3> tag text and consumes everything up until another <h2> or <h3> section boundary
-        const h3Regex = /<h3[^>]*>(?:<span[^>]*>)?(.*?)(?:<\/span>)?<\/h3>([\s\S]*?)(?=<h[23]>|$)/gi;
+        // Stronger regex to capture title text regardless of what formatting tags (<strong>, <em>, <span>) Substack throws inside it
+        const h3Regex = /<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h[23]>|$)/gi;
         let matchH3;
         let hasSubArticles = false;
         const fullHtmlContent = contentEncoded || bestDesc;
         
         while ((matchH3 = h3Regex.exec(fullHtmlContent)) !== null) {
+          const subTitle = this.cleanHtml(matchH3[1]).trim();
+          if (!subTitle) continue;
+          
           hasSubArticles = true;
-          const subTitle = this.cleanHtml(matchH3[1]);
           const subContent = matchH3[2];
           const subDescText = this.cleanHtml(subContent);
           
@@ -131,9 +134,13 @@ export const feedParser = {
           const subImg = this.scrapeImage(subContent);
           const subTags = this.calculateTags(subTitle, subDescText, subContent);
           
+          // Create unique link to bypass the deduplicator overwriting articles with the same URL
+          const uniqueHash = subTitle.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          const uniqueLink = `${link.trim()}#${uniqueHash}`;
+          
           const subArticle = new Article({
             title: subTitle,
-            link: link.trim(), // Link to the original collective post
+            link: uniqueLink, // Safe unique link!
             source: articleSourceName, // "DISPUTES REPORT"
             topics: subTags,
             description: subDescText,
