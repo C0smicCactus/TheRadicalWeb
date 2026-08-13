@@ -26,66 +26,24 @@ export const feedParser = {
   parse(rawXml, sourceName, maxArticles = null) {
     if (!rawXml) return [];
     const results = [];
-    const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
-    const atomRegex = /<entry[\s>]([\s\S]*?)<\/entry>/gi;
-
-    let items = [...rawXml.matchAll(itemRegex)];
-    if (items.length === 0) items = [...rawXml.matchAll(atomRegex)];
-
     const registeredHosts = getRegisteredHosts();
 
-    for (const match of items) {
-      const content = match[1] || '';
+    // Helper closure to assemble extracted strings into a clean Article instance
+    const processExtractedItem = (titleStr, linkStr, pubDateStr, summaryStr, descStr, contentEncodedStr, authorTagContent) => {
+      let title = this.cleanHtml(titleStr || 'Untitled');
+      let link = (linkStr || '').trim();
 
-      const titleMatch = content.match(/<title[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i);
-      let title = this.cleanHtml(titleMatch ? titleMatch[1] : 'Untitled');
-
-      // Check AU relevance for global sources
       if (Object.values(appFeeds.globalSources).includes(sourceName)) {
         const isRelevant = appFeeds.auKeywords.some(k => {
           const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
           return pattern.test(title.toLowerCase());
         });
-        if (!isRelevant) continue;
+        if (!isRelevant) return false;
       }
 
-      const linkMatch = content.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/i) ||
-                        content.match(/<link[^>]+href=["']([^"']+)["']/i);
-      let link = linkMatch ? linkMatch[1] : '';
-
-      const pubDateMatch = content.match(/<pubDate>([\s\S]*?)<\/pubDate>/i) ||
-                           content.match(/<published>([\s\S]*?)<\/published>/i) ||
-                           content.match(/<dc:date>([\s\S]*?)<\/dc:date>/i);
-      let pubDateStr = pubDateMatch ? pubDateMatch[1] : '';
-
-      const summaryMatch = content.match(/<summary.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>/i);
-      const descTagMatch = content.match(/<description.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
-      const contentEncodedMatch = content.match(/<content:encoded.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i) || 
-                                  content.match(/<content.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content>/i);
-
-      let summary = summaryMatch ? summaryMatch[1] : '';
-      let descTag = descTagMatch ? descTagMatch[1] : '';
-      let contentEncoded = contentEncodedMatch ? contentEncodedMatch[1] : '';
-
-      let bestDesc = summary.trim().length > 0 ? summary : descTag;
-      if (!bestDesc && contentEncoded) bestDesc = contentEncoded;
-      
-      const searchContent = `${summary} ${descTag} ${contentEncoded}`;
-
-      let authorTagContent = '';
-      const authorRegexes = [
-        /<dc:creator[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/i,
-        /<author[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i,
-        /<author[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/author>/i,
-        /<contributor[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i
-      ];
-      for (const reg of authorRegexes) {
-        const authMatch = content.match(reg);
-        if (authMatch && authMatch[1]) {
-          authorTagContent = authMatch[1];
-          break;
-        }
-      }
+      let bestDesc = summaryStr?.trim().length > 0 ? summaryStr : descStr;
+      if (!bestDesc && contentEncodedStr) bestDesc = contentEncodedStr;
+      const searchContent = `${summaryStr || ''} ${descStr || ''} ${contentEncodedStr || ''}`;
 
       let author = this.extractAuthor(authorTagContent, title, searchContent, sourceName);
       let articleSourceName = sourceName;
@@ -93,34 +51,23 @@ export const feedParser = {
       // SPECIAL RULE: LABOURSTART
       if (sourceName === "LABOURSTART") {
         let itemHost = '';
-        try { itemHost = new URL(link.trim()).hostname.replace(/^www\./, ''); } catch(e) {}
-        
-        // Exclude if it overlaps closely with anything in our existing appFeeds array database
-        if (registeredHosts.includes(itemHost)) {
-          continue; 
-        }
+        try { itemHost = new URL(link).hostname.replace(/^www\./, ''); } catch(e) {}
+        if (registeredHosts.includes(itemHost)) return false; 
         
         let publisher = "UNKNOWN PUBLISHER";
-        const pubMatch = bestDesc.match(/Source:\s*(.*?)(?:\s+http|<|$)/i);
-        if (pubMatch) {
-          publisher = pubMatch[1].trim().toUpperCase();
-        }
+        const pubMatch = (bestDesc || '').match(/Source:\s*(.*?)(?:\s+http|<|$)/i);
+        if (pubMatch) publisher = pubMatch[1].trim().toUpperCase();
         articleSourceName = `${publisher} via LABOURSTART`;
         
-        // Clean up title wrapper format common for LabourStart
-        if (title.startsWith('Australia: ')) {
-          title = title.substring(11).trim();
-        }
+        if (title.startsWith('Australia: ')) title = title.substring(11).trim();
       }
 
       // SPECIAL RULE: DISPUTES REPORT
-      if (sourceName === "DISPUTES REPORT" && (contentEncoded || bestDesc)) {
-        // Regex matches <h3> tag text and consumes everything up until another <h2> or <h3> section boundary
-        // Stronger regex to capture title text regardless of what formatting tags (<strong>, <em>, <span>) Substack throws inside it
+      if (sourceName === "DISPUTES REPORT" && (contentEncodedStr || bestDesc)) {
         const h3Regex = /<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h[23]>|$)/gi;
         let matchH3;
         let hasSubArticles = false;
-        const fullHtmlContent = contentEncoded || bestDesc;
+        const fullHtmlContent = contentEncodedStr || bestDesc;
         
         while ((matchH3 = h3Regex.exec(fullHtmlContent)) !== null) {
           const subTitle = this.cleanHtml(matchH3[1]).trim();
@@ -129,19 +76,15 @@ export const feedParser = {
           hasSubArticles = true;
           const subContent = matchH3[2];
           const subDescText = this.cleanHtml(subContent);
-          
-          // Grabs the image isolated cleanly within this h3 -> block 
           const subImg = this.scrapeImage(subContent);
           const subTags = this.calculateTags(subTitle, subDescText, subContent);
-          
-          // Create unique link to bypass the deduplicator overwriting articles with the same URL
           const uniqueHash = subTitle.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-          const uniqueLink = `${link.trim()}#${uniqueHash}`;
+          const uniqueLink = `${link}#${uniqueHash}`;
           
           const subArticle = new Article({
             title: subTitle,
-            link: uniqueLink, // Safe unique link!
-            source: articleSourceName, // "DISPUTES REPORT"
+            link: uniqueLink, 
+            source: articleSourceName,
             topics: subTags,
             description: subDescText,
             thumbnail: networkConfig.wrapImageProxy(subImg),
@@ -150,17 +93,11 @@ export const feedParser = {
             dominantColor: null
           });
           
-          if (!feedFilterRules.shouldExcludeArticle(subArticle)) {
-            results.push(subArticle);
-          }
-          
-          if (maxArticles !== null && results.length >= maxArticles) break;
+          if (!feedFilterRules.shouldExcludeArticle(subArticle)) results.push(subArticle);
+          if (maxArticles !== null && results.length >= maxArticles) return true;
         }
         
-        if (hasSubArticles) {
-          if (maxArticles !== null && results.length >= maxArticles) break;
-          continue; // Successfully split – Skip pushing the overarching "parent" article
-        }
+        if (hasSubArticles) return true; 
       }
 
       const tags = this.calculateTags(title, bestDesc, searchContent);
@@ -168,7 +105,7 @@ export const feedParser = {
 
       const article = new Article({
         title,
-        link: link.trim(),
+        link,
         source: articleSourceName,
         topics: tags,
         description: this.cleanHtml(bestDesc),
@@ -178,14 +115,99 @@ export const feedParser = {
         dominantColor: null
       });
 
-      if (!feedFilterRules.shouldExcludeArticle(article)) {
-        results.push(article);
-      }
+      if (!feedFilterRules.shouldExcludeArticle(article)) results.push(article);
+      return true;
+    };
 
-      if (maxArticles !== null && results.length >= maxArticles) {
-        break;
+    let domParsed = false;
+
+    // 1. ATTEMPT DOMPARSER SYSTEM
+    if (typeof window !== 'undefined' && typeof window.DOMParser !== 'undefined') {
+      try {
+        const parser = new window.DOMParser();
+        const xmlDoc = parser.parseFromString(rawXml, "text/xml");
+        if (!xmlDoc.querySelector("parsererror")) {
+          const items = Array.from(xmlDoc.querySelectorAll("item, entry"));
+          if (items.length > 0) {
+            domParsed = true;
+            for (const item of items) {
+              const title = item.querySelector("title")?.textContent;
+              let link = item.querySelector("link")?.textContent?.trim();
+              if (!link) link = item.querySelector("link")?.getAttribute("href");
+
+              const pubDate = item.querySelector("pubDate, published, date")?.textContent ||
+                              item.getElementsByTagNameNS("*", "date")[0]?.textContent;
+
+              const summary = item.querySelector("summary")?.textContent;
+              const desc = item.querySelector("description")?.textContent;
+              const content = item.getElementsByTagNameNS("*", "encoded")[0]?.textContent ||
+                              item.querySelector("content")?.textContent;
+
+              const author = item.getElementsByTagNameNS("*", "creator")[0]?.textContent ||
+                             item.querySelector("author > name, contributor > name, author")?.textContent;
+
+              processExtractedItem(title, link, pubDate, summary, desc, content, author);
+              if (maxArticles !== null && results.length >= maxArticles) break;
+            }
+          }
+        }
+      } catch (e) {
+        // Fallthrough on DOM failure
       }
     }
+
+    // 2. FALLBACK TO YOUR REGEX SYSTEM (If DOMParser fails or returns 0 tags)
+    if (!domParsed) {
+      const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
+      const atomRegex = /<entry[\s>]([\s\S]*?)<\/entry>/gi;
+
+      let items = [...rawXml.matchAll(itemRegex)];
+      if (items.length === 0) items = [...rawXml.matchAll(atomRegex)];
+
+      for (const match of items) {
+        const content = match[1] || '';
+
+        const titleMatch = content.match(/<title[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i);
+        const linkMatch = content.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/i) ||
+                          content.match(/<link[^>]+href=["']([^"']+)["']/i);
+        const pubDateMatch = content.match(/<pubDate>([\s\S]*?)<\/pubDate>/i) ||
+                             content.match(/<published>([\s\S]*?)<\/published>/i) ||
+                             content.match(/<dc:date>([\s\S]*?)<\/dc:date>/i);
+
+        const summaryMatch = content.match(/<summary.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>/i);
+        const descTagMatch = content.match(/<description.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
+        const contentEncodedMatch = content.match(/<content:encoded.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i) || 
+                                    content.match(/<content.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content>/i);
+
+        let authorTagContent = '';
+        const authorRegexes = [
+          /<dc:creator[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/i,
+          /<author[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i,
+          /<author[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/author>/i,
+          /<contributor[^>]*>[\s\S]*?<name[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/name>/i
+        ];
+        for (const reg of authorRegexes) {
+          const authMatch = content.match(reg);
+          if (authMatch && authMatch[1]) {
+            authorTagContent = authMatch[1];
+            break;
+          }
+        }
+
+        processExtractedItem(
+          titleMatch ? titleMatch[1] : undefined,
+          linkMatch ? linkMatch[1] : undefined,
+          pubDateMatch ? pubDateMatch[1] : undefined,
+          summaryMatch ? summaryMatch[1] : undefined,
+          descTagMatch ? descTagMatch[1] : undefined,
+          contentEncodedMatch ? contentEncodedMatch[1] : undefined,
+          authorTagContent
+        );
+
+        if (maxArticles !== null && results.length >= maxArticles) break;
+      }
+    }
+
     return results;
   },
 

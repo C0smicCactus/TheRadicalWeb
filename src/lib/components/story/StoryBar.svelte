@@ -63,10 +63,8 @@
   <div class="w-full border-b border-borderSubtle flex justify-center bg-appBackground shadow-sm z-10">
     <div class="max-w-[1754px] w-full h-[135px] overflow-x-auto px-6 py-3 flex space-x-5 items-center scrollbar-none">
       {#each finalEntries as entry (entry.source)}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div
-          class="flex flex-col items-center cursor-pointer min-w-[80px]"
+        <button
+          class="flex flex-col items-center cursor-pointer min-w-[80px] bg-transparent border-none p-0 outline-none hover:opacity-80 transition-opacity"
           onclick={() => {
             const entryIndex = finalEntries.findIndex(e => e.source === entry.source);
             activeEntryIndex = entryIndex;
@@ -98,7 +96,7 @@
           >
             {entry.source}
           </div>
-        </div>
+        </button>
       {/each}
     </div>
   </div>

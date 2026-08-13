@@ -2,7 +2,7 @@
   import { appUtils } from '$lib/utils/appUtils.js';
   import { useSwipeGesture } from '$lib/composables/useSwipeGesture.svelte.js';
 
-  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail } = $props();
+  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
 
   let currentIndex = $state(0);
 
@@ -25,9 +25,7 @@
   function prevSlide(e) { if (e) e.stopPropagation(); currentIndex = 0; }
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div role="article" class="w-[400px] max-w-full h-[610px] flex flex-col" ontouchstart={swipe.handleTouchStart} ontouchmove={swipe.handleTouchMove} ontouchend={swipe.handleTouchEnd}>
+<div role="article" class="w-[400px] max-w-full h-[610px] flex flex-col" ontouchstart={swipe.handleTouchStart} ontouchmove={swipe.handleTouchMove} ontouchend={swipe.handleTouchEnd} use:lazyLoadAction>
   <div class="flex items-center px-1 pb-2">
     <div class="w-7 h-7 rounded-full bg-appSurface border border-borderSubtle flex items-center justify-center text-textSubtle">
       <i class="fa-solid fa-user text-[11px]"></i>
@@ -39,8 +37,8 @@
 
   <div class="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden bg-tileBackground group">
     <div class="flex transition-transform duration-300 ease-out h-full w-[200%]" style="transform: translateX(-{currentIndex * 50}%);">
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <div class="w-1/2 h-full relative cursor-pointer" onclick={openLink}>
+      <!-- Main Story image area made into a button for a11y -->
+      <button class="w-1/2 h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
         {#if finalThumbnail || article.thumbnail}
           <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
         {/if}
@@ -63,7 +61,7 @@
             {article.title}
           </h3>
         </div>
-      </div>
+      </button>
 
       <div class="w-1/2 h-full bg-tileBackground p-7 flex flex-col justify-between border border-borderSubtle">
         <div>
@@ -93,9 +91,8 @@
       <span class="font-black text-[11px] mr-2 uppercase" style="color: {primaryColor};">{article.source}</span>
       {article.description}
       {#if article.description.length > 85}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <div class="absolute bottom-0 right-0 pl-8 pr-1 flex items-center text-[13px]" style="background: linear-gradient(to right, transparent, var(--bg-main) 35%, var(--bg-main) 100%);">
-          <span class="text-textMain">...</span><span class="text-textSubtle ml-1 cursor-pointer hover:underline" onclick={openLink}>more</span>
+          <span class="text-textMain">...</span><button class="text-textSubtle ml-1 cursor-pointer hover:underline border-none bg-transparent p-0 m-0" onclick={openLink}>more</button>
         </div>
       {/if}
     </div>

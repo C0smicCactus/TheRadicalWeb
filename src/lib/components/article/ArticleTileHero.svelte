@@ -1,6 +1,6 @@
 <script>
   import { appUtils } from '$lib/utils/appUtils.js';
-  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail } = $props();
+  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
 
   function openLink(e) {
     if (e) e.stopPropagation();
@@ -9,9 +9,7 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all" onclick={openLink}>
+<button class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
   <div class="relative w-full lg:w-[60%] aspect-video bg-tileBackground overflow-hidden border-r border-borderSubtle">
     {#if finalThumbnail || article.thumbnail}
       <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -21,7 +19,7 @@
     </div>
   </div>
   
-  <div class="flex flex-col justify-center lg:w-[40%] p-6 lg:p-8 gap-4 bg-appSurface">
+  <div class="flex flex-col justify-center lg:w-[40%] p-6 lg:p-8 gap-4 bg-appSurface w-full">
     <div class="flex items-center gap-2 text-[11px] font-bold text-textSubtle uppercase tracking-wider">
       <span>{appUtils.formatRelativeDate(article.parsedDate)}</span>
       {#if topicsEnabled && article.topics.length > 0}
@@ -37,4 +35,4 @@
       READ FULL STORY <i class="fa-solid fa-arrow-right"></i>
     </div>
   </div>
-</div>
+</button>

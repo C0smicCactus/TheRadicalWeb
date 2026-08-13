@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte';
   import { feedParser } from '$lib/services/feedParser.js';
   
   import ArticleTileMobile from './ArticleTileMobile.svelte';
@@ -9,24 +8,34 @@
   let { article, primaryColor, onArticleOpen, variant = "mobile", topicsEnabled = false } = $props();
   let finalThumbnail = $state(undefined);
 
-  onMount(() => {
-    let mounted = true;
-    if (!finalThumbnail && article.link) {
-      feedParser.scrapeUrlForImage(article.link).then(scraped => {
-        if (!mounted) return;
-        if (scraped) {
-          finalThumbnail = feedParser.scrapeImage(scraped) || scraped;
+  // Use Intersection Observer to only scrape image once the tile enters the viewport
+  function lazyLoadAction(node) {
+    let observer;
+    if (!finalThumbnail && !article.thumbnail && article.link) {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          feedParser.scrapeUrlForImage(article.link).then(scraped => {
+            if (scraped) {
+              finalThumbnail = feedParser.scrapeImage(scraped) || scraped;
+            }
+          });
+          observer.disconnect(); // Fire once and detach
         }
-      });
+      }, { rootMargin: '300px' }); // Trigger scrape 300px before scrolling into view
+      observer.observe(node);
     }
-    return () => mounted = false;
-  });
+    return {
+      destroy() {
+        if (observer) observer.disconnect();
+      }
+    };
+  }
 </script>
 
 {#if variant === 'mobile'}
-  <ArticleTileMobile {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} />
+  <ArticleTileMobile {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} {lazyLoadAction} />
 {:else if variant === 'desktop'}
-  <ArticleTileDesktop {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} />
+  <ArticleTileDesktop {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} {lazyLoadAction} />
 {:else if variant === 'hero'}
-  <ArticleTileHero {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} />
+  <ArticleTileHero {article} {primaryColor} {onArticleOpen} {topicsEnabled} {finalThumbnail} {lazyLoadAction} />
 {/if}

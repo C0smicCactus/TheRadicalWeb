@@ -2,11 +2,14 @@
 
 # TheRadicalWeb 🌐
 
-**A high-performance news aggregator centralised for Australian political and social perspectives built for rapid information scanning and independent media discovery.**
+**A high-performance news aggregator centralised for Australian political and social perspectives, built for rapid information scanning and independent media discovery.**
 
 <p>
   <a href="https://c0smiccactus.github.io/TheRadicalWeb/"><strong>🌍 View Live Site</strong></a>
 </p>
+
+<!-- TODO: Add a screenshot of your app here! -->
+<!-- <img src="./docs/screenshot.png" alt="The Radical Web Dashboard" width="800" style="border-radius: 12px; margin: 15px 0;"> -->
 
 <div align="center">
   <img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=for-the-badge">
@@ -17,7 +20,7 @@
   <img src="https://img.shields.io/github/license/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=4ac6b7">
 </div>
 
-*This is a Svelte port of the Flutter project,
+*This is a Svelte 5 port of the Flutter project,
 [The Radical](https://github.com/C0smicCactus/TheRadical).*
 
 </div>
@@ -27,7 +30,7 @@
 ## ⚠️ Important
 
 > [!WARNING]
-> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it relies on direct RSS/Atom feeds. You may encounter incomplete metadata as we refine our custom regex-based parsing engines.
+> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it relies on direct RSS/Atom feeds routed through CORS proxies. You may encounter incomplete metadata as we refine our custom parsing engines.
 
 ---
 
@@ -40,7 +43,16 @@ The Radical was born out of a need to centralise news from leftist and independe
 
 ---
 
-# 📊 Feed Sources
+## ✨ Features
+
+- **📱 Instagram-Style Story Viewer:** Catch up on the latest headlines from each source with a quick, tap-through story UI.
+- **🎨 Customisable Interface:** Toggle between dark/light mode and choose your own primary accent color (or enter a custom hex code).
+- **🗂️ Topic Filtering:** Automatically categorises articles into topics like Labour, Environment, First Nations, and Praxis.
+- **⚡ Offline Caching:** Caches the latest articles to your browser's local storage for instant loading on your next visit.
+
+---
+
+## 📊 Feed Sources
 
 The Radical aggregates from **37 independent news sources**, organised into three categories:
 
@@ -48,7 +60,7 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 <tr>
 <td valign="top" width="60%">
 
-## Core Sources (30)
+### Core Sources (30)
 
 - Picket Line
 - Green Left
@@ -84,16 +96,16 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 </td>
 <td valign="top" width="40%">
 
-## Global Sources (3)
-
+### Global Sources (3)
+*(Filtered for Australian relevance)*
 - Jacobin
 - The Militant
 - Counter Punch
 
 <br>
 
-## Extended Sources (4)
-
+### Extended Sources (4)
+*(Optional broader coverage)*
 - Michael West
 - Independent Australia
 - The Conversation
@@ -103,20 +115,40 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 </tr>
 </table>
 
----
-
 > [!TIP]
 > **Prefer your own RSS reader? No dramas!**
 >
 > All the RSS feeds used in this project can be found
-> [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/core/appFeeds.js).
+> [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/appFeeds.js).
 
 ---
 
-# 🚀 Roadmap & Known Issues
+## 💻 Local Development
 
-## Things to Fix 🛠️
+Want to run The Radical locally or contribute to the project? 
 
-- [ ] Reliably display authors.
-- [ ] Reliably display article photos.
-- [ ] Filter out non-news articles (theory, podcasts, etc.).
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/C0smicCactus/TheRadicalWeb.git
+   cd TheRadicalWeb
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   *The app will be available at `http://localhost:3000`*
+
+---
+
+## 🚀 Roadmap & Known Issues
+
+### Things to Fix 🛠️
+- [ ] Reliably extract and display author names across all formats.
+- [ ] Reliably scrape and display article thumbnail photos.
+- [ ] Filter out non-news articles (theory pieces, podcasts, announcements).

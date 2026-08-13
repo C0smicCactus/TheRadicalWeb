@@ -4,23 +4,25 @@ export const appUtils = {
     if (isNaN(date.getTime())) return "";
 
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffMs = date.getTime() - now.getTime(); // Negative for past time
+    const diffMins = Math.round(diffMs / (1000 * 60));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
     const dayStr = String(date.getDate()).padStart(2, '0');
     const monthStr = String(date.getMonth() + 1).padStart(2, '0');
     const yearStr = date.getFullYear();
     const formattedDate = `${dayStr}/${monthStr}/${yearStr}`;
 
-    if (diffHours < 24) {
-      if (diffHours <= 0) {
-        return diffMins <= 1 ? "JUST NOW" : `${diffMins} MINUTES AGO`;
-      }
-      return `${diffHours} HOURS AGO`;
-    } else if (diffDays <= 14) {
-      return `${diffDays} DAYS AGO (${formattedDate})`;
+    // Utilizing browser's native i18n relative time format
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'always', style: 'long' });
+
+    if (Math.abs(diffHours) < 24) {
+      if (Math.abs(diffMins) <= 1) return "JUST NOW";
+      if (Math.abs(diffHours) < 1) return rtf.format(diffMins, 'minute').toUpperCase();
+      return rtf.format(diffHours, 'hour').toUpperCase();
+    } else if (Math.abs(diffDays) <= 14) {
+      return `${rtf.format(diffDays, 'day').toUpperCase()} (${formattedDate})`;
     } else {
       return formattedDate;
     }
