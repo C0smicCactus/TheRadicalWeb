@@ -32,18 +32,38 @@ async function buildFeed() {
   const sources = { ...appFeeds.coreSources, ...appFeeds.globalSources, ...appFeeds.extendedSources };
   const allArticles = [];
 
-  // Fetch all feeds simultaneously
+  // Fetch all feeds simultaneously with an automatic proxy fallback
   const fetchPromises = Object.entries(sources).map(async ([url, name]) => {
+    let text = '';
+    let success = false;
+
+    // Attempt 1: Direct Fetch (Often fails on sites with strict bot protection like Substack)
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheRadicalBot/1.0)' } });
+      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
       if (res.ok) {
-        const text = await res.text();
-        // The feedParser automatically falls back to Regex when DOMParser is unavailable in Node.js
-        const parsed = feedParser.parse(text, name, 25);
-        allArticles.push(...parsed);
+        text = await res.text();
+        success = true;
       }
-    } catch(e) {
-      console.error(`Failed to fetch ${name}:`, e.message);
+    } catch(e) {}
+
+    // Attempt 2: Fallback to an open proxy if the direct fetch is blocked
+    if (!success) {
+      try {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        const res = await fetch(proxyUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        if (res.ok) {
+          text = await res.text();
+          success = true;
+        }
+      } catch(e) {
+        console.error(`Failed to fetch ${name} via proxy fallback.`);
+      }
+    }
+
+    if (success && text) {
+      // The feedParser automatically falls back to Regex when DOMParser is unavailable in Node.js
+      const parsed = feedParser.parse(text, name, 25);
+      allArticles.push(...parsed);
     }
   });
 

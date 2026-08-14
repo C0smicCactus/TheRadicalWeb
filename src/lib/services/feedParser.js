@@ -64,18 +64,27 @@ export const feedParser = {
 
       // SPECIAL RULE: DISPUTES REPORT
       if (sourceName === "DISPUTES REPORT" && (contentEncodedStr || bestDesc)) {
-        const h3Regex = /<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h[23]>|$)/gi;
-        let matchH3;
+        // Broadened to detect h2, h3, and h4 tags in case the author changes formatting
+        const hRegex = /<h[234][^>]*>([\s\S]*?)<\/h[234]>([\s\S]*?)(?=<h[234]>|$)/gi;
+        let matchH;
         let hasSubArticles = false;
         const fullHtmlContent = contentEncodedStr || bestDesc;
         
-        while ((matchH3 = h3Regex.exec(fullHtmlContent)) !== null) {
-          const subTitle = this.cleanHtml(matchH3[1]).trim();
+        while ((matchH = hRegex.exec(fullHtmlContent)) !== null) {
+          const subTitle = this.cleanHtml(matchH[1]).trim();
           if (!subTitle) continue;
           
           hasSubArticles = true;
-          const subContent = matchH3[2];
-          const subDescText = this.cleanHtml(subContent);
+          const subContent = matchH[2];
+          
+          let subDescText = this.cleanHtml(subContent);
+          // Trim long descriptions to maintain consistent UI and XML sizes
+          if (subDescText.length > 350) {
+            const truncated = subDescText.substring(0, 350);
+            const lastSpace = truncated.lastIndexOf(' ');
+            subDescText = truncated.substring(0, lastSpace > 0 ? lastSpace : 350) + '...';
+          }
+          
           const subImg = this.scrapeImage(subContent);
           const subTags = this.calculateTags(subTitle, subDescText, subContent);
           const uniqueHash = subTitle.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -103,12 +112,20 @@ export const feedParser = {
       const tags = this.calculateTags(title, bestDesc, searchContent);
       const scrapedImg = this.scrapeImage(searchContent || bestDesc);
 
+      let finalDescription = this.cleanHtml(bestDesc);
+      // Trim long descriptions to maintain consistent UI and XML sizes
+      if (finalDescription.length > 350) {
+        const truncated = finalDescription.substring(0, 350);
+        const lastSpace = truncated.lastIndexOf(' ');
+        finalDescription = truncated.substring(0, lastSpace > 0 ? lastSpace : 350) + '...';
+      }
+
       const article = new Article({
         title,
         link,
         source: articleSourceName,
         topics: tags,
-        description: this.cleanHtml(bestDesc),
+        description: finalDescription,
         thumbnail: networkConfig.wrapImageProxy(scrapedImg),
         parsedDate: this.parseDate(pubDateStr),
         author: author || null,
