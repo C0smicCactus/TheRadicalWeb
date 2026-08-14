@@ -14,7 +14,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=for-the-badge">
   <img src="https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge&color=ff7070">
-  <img src="https://img.shields.io/badge/Feeds-37-green?style=for-the-badge&color=4ac6b7">
+  <img src="https://img.shields.io/badge/Feeds-39-green?style=for-the-badge&color=4ac6b7">
   <img src="https://img.shields.io/github/repo-size/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=ff7070">
   <img src="https://img.shields.io/github/stars/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=965f8a">
   <img src="https://img.shields.io/github/license/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=4ac6b7">
@@ -54,13 +54,13 @@ The Radical was born out of a need to centralise news from leftist and independe
 
 ## 📊 Feed Sources
 
-The Radical aggregates from **37 independent news sources**, organised into three categories:
+The Radical aggregates from **39 independent news sources**, organised into three categories:
 
 <table>
 <tr>
 <td valign="top" width="60%">
 
-### Core Sources (30)
+### Core Sources (32)
 
 - Picket Line
 - Green Left
@@ -83,7 +83,7 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 - Spirit of Eureka
 - Black Peoples Union
 - IndigenousX
-- Red Black Notes
+- Red and Black Notes
 - The Guardian (CPA)
 - Arena
 - The Communist
@@ -92,6 +92,8 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 - 3CR
 - Eureka Initiative
 - LabourStart
+- OpenAustralia Foundation
+- Search Foundation
 
 </td>
 <td valign="top" width="40%">
@@ -121,7 +123,7 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 > All the RSS feeds used in this project can be found
 > [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/appFeeds.js).
 
-> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 37 sources at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
+> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 39 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
 > 
 > `https://c0smiccactus.github.io/TheRadicalWeb/radical-feed.xml`
 

@@ -30,7 +30,9 @@ export const appFeeds = {
     "https://koorimail.com/feed": "KOORI MAIL",
     "https://www.3cr.org.au/news.xml": "3CR",
     "https://revaus.org/category/australian-politics/feed": "EUREKA INITIATIVE",
-    "https://www.labourstart.org/rss/labourstart.au.xml": "LABOURSTART"
+    "https://www.labourstart.org/rss/labourstart.au.xml": "LABOURSTART",
+    "https://oaf.org.au/blog/feed": "OPENAUSTRALIA FOUNDATION",
+    "https://www.search.org.au/search_news.rss": "SEARCH FOUNDATION"
   },
   globalSources: {
     "https://jacobin.com/feed": "JACOBIN",
@@ -82,6 +84,8 @@ export const appFeeds = {
     "3CR": "3CR.jpg",
     "EUREKA INITIATIVE": "",
     "LABOURSTART": "LABOURSTART.jpg",
+    "OPENAUSTRALIA FOUNDATION": "",
+    "SEARCH FOUNDATION": "",
     "JACOBIN": "",
     "THE MILITANT": "",
     "COUNTER PUNCH": "",
