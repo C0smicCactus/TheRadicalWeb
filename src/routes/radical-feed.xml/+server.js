@@ -2,16 +2,16 @@ import { getMegaFeed } from '$lib/server/megaFetcher.js';
 
 export const prerender = true;
 
-// Helper function to safely escape strict XML characters
+// Helper function to safely escape strict XML characters using string concatenation
 function escapeXml(unsafe) {
   if (!unsafe) return '';
   return unsafe.toString().replace(/[<>&'"]/g, function (c) {
     switch (c) {
-      case '<': return '&' + 'lt;' + ';';
-      case '>': return '&' + 'gt;' + ';';
-      case '&': return '&' + 'amp;' + ';';
-      case '\'': return '&' + 'apos;' + ';';
-      case '"': return '&' + 'quot;' + ';';
+      case '<': return '&' + 'lt;';
+      case '>': return '&' + 'gt;';
+      case '&': return '&' + 'amp;';
+      case '\'': return '&' + 'apos;';
+      case '"': return '&' + 'quot;';
       default: return c;
     }
   });

@@ -403,20 +403,22 @@ export const feedParser = {
       let passes = 0;
       do {
         prev = str;
+        // Using string concatenation prevents text editors and chat interfaces 
+        // from accidentally converting the codes into visual symbols.
         str = str
-          .replace(/&/gi, '&')
-          .replace(/</gi, '<')
-          .replace(/>/gi, '>')
-          .replace(/"/gi, '"')
-          .replace(/'/gi, "'")
-          .replace(/&lsquo;/gi, "'")
-          .replace(/&rsquo;/gi, "'")
-          .replace(/&ldquo;/gi, '"')
-          .replace(/&rdquo;/gi, '"')
-          .replace(/&ndash;/gi, '-')
-          .replace(/&mdash;/gi, '—')
-          .replace(/&nbsp;/gi, ' ')
-          // Adding optional ? catches typos in feeds where the semicolon is missing
+          .replace(new RegExp('&' + 'amp;', 'gi'), '&')
+          .replace(new RegExp('&' + 'lt;', 'gi'), '<')
+          .replace(new RegExp('&' + 'gt;', 'gi'), '>')
+          .replace(new RegExp('&' + 'quot;', 'gi'), '"')
+          .replace(new RegExp('&' + 'apos;', 'gi'), "'")
+          .replace(new RegExp('&' + 'lsquo;', 'gi'), "'")
+          .replace(new RegExp('&' + 'rsquo;', 'gi'), "'")
+          .replace(new RegExp('&' + 'ldquo;', 'gi'), '"')
+          .replace(new RegExp('&' + 'rdquo;', 'gi'), '"')
+          .replace(new RegExp('&' + 'ndash;', 'gi'), '-')
+          .replace(new RegExp('&' + 'mdash;', 'gi'), '—')
+          .replace(new RegExp('&' + 'nbsp;', 'gi'), ' ')
+          // Catch numeric entity codes (with or without semicolons)
           .replace(/&#(\d+);?/g, (match, dec) => String.fromCharCode(dec))
           .replace(/&#x([a-fA-F0-9]+);?/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
         passes++;
