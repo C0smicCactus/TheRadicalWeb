@@ -154,7 +154,7 @@ Want to run The Radical locally or contribute to the project?
 
 - **Eww why did you include X!? Those guys are the worst!**
 
-The goal of The Radical is to remain as neutral as possible unifying leftist news in one place. If you do not want to see articles from a specific publisher, there is a setting to manually remove them.
+The goal of The Radical is to remain as neutral as possible, unifying leftist news in one place. If you do not want to see articles from a specific publisher, there is a setting to manually remove them.
 
 - **Was this project made using AI? If so, how much?**
 
@@ -172,3 +172,4 @@ No. I deliberately made the decision to only provide a small amount of each arti
 - [ ] Reliably extract and display author names across all formats.
 - [ ] Reliably scrape and display article thumbnail photos.
 - [ ] Filter out non-news articles (theory pieces, podcasts, announcements).
+- [ ] DISPUTE REPORTS sometimes works, sometimes doesn't.
