@@ -392,42 +392,51 @@ export const feedParser = {
   cleanHtml(input) {
     if (!input) return "";
 
-    // Replace block-level tags and line breaks with space to avoid word merging
-    let result = input
-      .replace(/<!\[CDATA\[|\]\]>/gi, '')
-      .replace(/&nbsp;/gi, ' ')
-      .replace(/amp;nbsp/gi, ' ')
-      .replace(/<\/?(p|br|div|h[1-6]|li|ul|ol|table|tr|td|th|blockquote)[^>]*>/gi, ' ');
+    let result = input.toString();
 
-    // Because the parser now runs on a Node server (via GitHub Actions), we don't have
-    // the browser's automatic DOMParser to decode HTML entities. We must do it manually.
+    // 1. Remove CDATA wrappers
+    result = result.replace(/<!\[CDATA\[/gi, '').replace(/\]\]>/gi, '');
+
+    // 2. Decode entities (Loop up to 3 times to handle double/triple encoding)
     const decodeEntities = (str) => {
-      return str
-        .replace(/&/g, '&')
-        .replace(/</g, '<')
-        .replace(/>/g, '>')
-        .replace(/"/g, '"')
-        .replace(/'/g, "'")
-        .replace(/&lsquo;/g, "'")
-        .replace(/&rsquo;/g, "'")
-        .replace(/&ldquo;/g, '"')
-        .replace(/&rdquo;/g, '"')
-        .replace(/&ndash;/g, '-')
-        .replace(/&mdash;/g, '—')
-        .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
-        .replace(/&#x([a-fA-F0-9]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+      let prev;
+      let passes = 0;
+      do {
+        prev = str;
+        str = str
+          .replace(/&/gi, '&')
+          .replace(/</gi, '<')
+          .replace(/>/gi, '>')
+          .replace(/"/gi, '"')
+          .replace(/'/gi, "'")
+          .replace(/&lsquo;/gi, "'")
+          .replace(/&rsquo;/gi, "'")
+          .replace(/&ldquo;/gi, '"')
+          .replace(/&rdquo;/gi, '"')
+          .replace(/&ndash;/gi, '-')
+          .replace(/&mdash;/gi, '—')
+          .replace(/&nbsp;/gi, ' ')
+          // Adding optional ? catches typos in feeds where the semicolon is missing
+          .replace(/&#(\d+);?/g, (match, dec) => String.fromCharCode(dec))
+          .replace(/&#x([a-fA-F0-9]+);?/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+        passes++;
+      } while (str !== prev && passes < 3);
+      return str;
     };
 
-    // 1. Decode entities first. This turns escaped code like "<div>" back into "<div>"
     result = decodeEntities(result);
 
-    // 2. Strip all HTML tags now that they are actual tags
+    // 3. Replace block-level tags and line breaks with space to avoid word merging
+    result = result.replace(/<\/?(p|br|div|h[1-6]|li|ul|ol|table|tr|td|th|blockquote)[^>]*>/gi, ' ');
+
+    // 4. Strip all remaining complete HTML tags
     result = result.replace(/<[^>]*>/g, ' ');
 
-    // 3. Decode one last time in case there were double-encoded characters inside the text
-    result = decodeEntities(result);
+    // 5. Strip any truncated HTML tag at the very end of the string (e.g. "<div class=")
+    result = result.replace(/<[^>]*$/, '');
 
-    // 4. Clean up whitespace
+    // 6. Final cleanup of whitespace and stray encoded characters
+    result = decodeEntities(result);
     result = result.replace(/\s+/g, ' ').trim();
 
     return result;

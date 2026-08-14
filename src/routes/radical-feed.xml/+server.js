@@ -2,6 +2,21 @@ import { getMegaFeed } from '$lib/server/megaFetcher.js';
 
 export const prerender = true;
 
+// Helper function to safely escape strict XML characters
+function escapeXml(unsafe) {
+  if (!unsafe) return '';
+  return unsafe.toString().replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+      case '<': return '&' + 'lt;' + ';';
+      case '>': return '&' + 'gt;' + ';';
+      case '&': return '&' + 'amp;' + ';';
+      case '\'': return '&' + 'apos;' + ';';
+      case '"': return '&' + 'quot;' + ';';
+      default: return c;
+    }
+  });
+}
+
 export async function GET() {
   const articles = await getMegaFeed();
   
@@ -16,14 +31,14 @@ export async function GET() {
   ${articles.map(article => `
   <item>
     <title><![CDATA[${article.title}]]></title>
-    <link>${article.link}</link>
-    <guid isPermaLink="false">${article.link}</guid>
+    <link>${escapeXml(article.link)}</link>
+    <guid isPermaLink="false">${escapeXml(article.link)}</guid>
     <description><![CDATA[${article.description}]]></description>
     <pubDate>${new Date(article.parsedDate).toUTCString()}</pubDate>
-    <source url="${article.link}">${article.source}</source>
+    <source url="${escapeXml(article.link)}">${escapeXml(article.source)}</source>
     ${article.author ? `<author><![CDATA[${article.author}]]></author>` : ''}
     ${article.topics.map(t => `<category><![CDATA[${t}]]></category>`).join('')}
-    ${article.thumbnail ? `<media:content url="${article.thumbnail}" medium="image" />` : ''}
+    ${article.thumbnail ? `<media:content url="${escapeXml(article.thumbnail)}" medium="image" />` : ''}
   </item>`).join('\n  ')}
 </channel>
 </rss>`;
