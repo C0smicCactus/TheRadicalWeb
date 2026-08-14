@@ -8,6 +8,9 @@ const config = {
     adapter: adapter({
       fallback: '404.html'
     }),
+    prerender: {
+      entries: ['*', '/radical-data.json', '/radical-feed.xml']
+    },
     paths: {
       base: process.argv.includes('dev') ? '' : '/TheRadicalWeb'
     }

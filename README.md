@@ -30,7 +30,7 @@
 ## ⚠️ Important
 
 > [!WARNING]
-> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it relies on direct RSS/Atom feeds routed through CORS proxies. You may encounter incomplete metadata as we refine our custom parsing engines.
+> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it utilises a static API generated hourly via GitHub Actions to safely fetch data without relying on unreliable browser CORS proxies. You may still encounter incomplete metadata as the custom parsing engines are refined.
 
 ---
 
@@ -120,6 +120,10 @@ The Radical aggregates from **37 independent news sources**, organised into thre
 >
 > All the RSS feeds used in this project can be found
 > [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/appFeeds.js).
+
+> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 37 sources at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
+> 
+> `https://c0smiccactus.github.io/TheRadicalWeb/radical-feed.xml`
 
 ---
 

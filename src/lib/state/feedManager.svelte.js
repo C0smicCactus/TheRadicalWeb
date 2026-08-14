@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { appFeeds } from '$lib/config/appFeeds.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
 import { feedParser } from '$lib/services/feedParser.js';
@@ -136,6 +137,43 @@ export class FeedManager {
   }
 
   fetchNews = async (isBackground = false) => {
+    if (!isBackground) {
+      this.isLoading = true;
+      this.statusMessage = "Receiving signals...";
+      // Fake progress for visual UI consistency (since it's only 1 request now)
+      this.totalSources = 1; 
+      this.completedSources = 0; 
+    }
+    
+    try {
+      // Fetch the pre-compiled master list. A timestamp query prevents browser caching.
+      const res = await fetch(`${base || ''}/radical-data.json?t=${Date.now()}`); 
+      
+      if (res.ok) {
+        const data = await res.json();
+        this.completedSources = 1; // Snaps progress bar to 100%
+        
+        // Small timeout so the user actually sees the 100% loading ring
+        setTimeout(() => {
+          this.processFetchedArticles(data.map(a => Article.fromMap(a)));
+        }, 250); 
+      } else {
+        throw new Error("Failed to load server data");
+      }
+    } catch(e) {
+      console.error(e);
+      this.statusMessage = "Network error. Loading offline cache...";
+      setTimeout(() => {
+        this.processFetchedArticles([]);
+      }, 1000);
+    }
+  }
+
+  /* 
+  =============================================================================
+  OLD FETCH LOGIC PRESERVED FOR SAFEKEEPING
+  =============================================================================
+  fetchNews = async (isBackground = false) => {
     const sources = { ...appFeeds.coreSources, ...appFeeds.globalSources };
     if (this.extendedMode) Object.assign(sources, appFeeds.extendedSources);
 
@@ -197,7 +235,29 @@ export class FeedManager {
 
     this.processFetchedArticles(freshBatch);
   }
+  =============================================================================
+  */
 
+  processFetchedArticles = (freshBatch) => {
+    // If no network data, fall back entirely to local state/cache
+    if (freshBatch.length === 0) {
+      this.isLoading = false;
+      this.applyLogic();
+      return;
+    }
+
+    // Because the server already handles deduplication and sorting, 
+    // the frontend simply accepts the server's master list directly.
+    this.allArticles = freshBatch;
+    this.isLoading = false;
+    this.applyLogic();
+    this.saveToCache();
+  }
+
+  /*
+  =============================================================================
+  OLD PROCESS LOGIC PRESERVED FOR SAFEKEEPING
+  =============================================================================
   processFetchedArticles = (freshBatch) => {
     const deduplicated = new Map();
     for (const a of this.allArticles) deduplicated.set(a.link.toLowerCase(), a);
@@ -208,6 +268,8 @@ export class FeedManager {
     this.applyLogic();
     this.saveToCache();
   }
+  =============================================================================
+  */
 
   applyLogic = () => {
     let filtered = this.allArticles;
