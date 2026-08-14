@@ -5,11 +5,10 @@
   function openLink(e) {
     if (e) e.stopPropagation();
     if (onArticleOpen) onArticleOpen(article.title);
-    window.open(article.link, '_blank', 'noopener,noreferrer');
   }
 </script>
 
-<button class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
+<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
   <div class="relative w-full lg:w-[60%] aspect-video bg-tileBackground overflow-hidden border-r border-borderSubtle">
     {#if finalThumbnail || article.thumbnail}
       <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -35,4 +34,4 @@
       READ FULL STORY <i class="fa-solid fa-arrow-right"></i>
     </div>
   </div>
-</button>
+</a>

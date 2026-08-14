@@ -5,11 +5,10 @@
   function openLink(e) {
     if (e) e.stopPropagation();
     if (onArticleOpen) onArticleOpen(article.title);
-    window.open(article.link, '_blank', 'noopener,noreferrer');
   }
 </script>
 
-<button class="w-full text-left flex flex-col gap-3 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 m-0 p-0" onclick={openLink} use:lazyLoadAction>
+<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col gap-3 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 m-0 p-0" onclick={openLink} use:lazyLoadAction>
   <div class="relative w-full aspect-[16/9] bg-tileBackground overflow-hidden">
     {#if finalThumbnail || article.thumbnail}
       <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -33,4 +32,4 @@
     </h3>
     <p class="text-sm text-textMuted line-clamp-2">{article.description}</p>
   </div>
-</button>
+</a>

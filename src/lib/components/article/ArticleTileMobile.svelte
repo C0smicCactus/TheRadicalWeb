@@ -18,7 +18,6 @@
   function openLink(e) {
     if (e) e.stopPropagation();
     if (onArticleOpen) onArticleOpen(article.title);
-    window.open(article.link, '_blank', 'noopener,noreferrer');
   }
 
   function nextSlide(e) { if (e) e.stopPropagation(); currentIndex = 1; }
@@ -37,8 +36,8 @@
 
   <div class="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden bg-tileBackground group">
     <div class="flex transition-transform duration-300 ease-out h-full w-[200%]" style="transform: translateX(-{currentIndex * 50}%);">
-      <!-- Main Story image area made into a button for a11y -->
-      <button class="w-1/2 h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
+      <!-- Main Story image area -->
+      <a href={article.link} target="_blank" rel="noopener noreferrer" class="w-1/2 h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
         {#if finalThumbnail || article.thumbnail}
           <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
         {/if}
@@ -61,7 +60,7 @@
             {article.title}
           </h3>
         </div>
-      </button>
+      </a>
 
       <div class="w-1/2 h-full bg-tileBackground p-7 flex flex-col justify-between border border-borderSubtle">
         <div>
@@ -69,7 +68,7 @@
           <div class="mt-4 font-display font-black text-lg text-textMain leading-tight uppercase line-clamp-3 tracking-tighter">{article.title}</div>
           <div class="mt-4 text-textMuted text-sm leading-relaxed line-clamp-6 pr-1">{article.description}</div>
         </div>
-        <button onclick={openLink} class="w-full bg-textMain text-appBackground py-4 font-black text-[10px] tracking-widest uppercase hover:opacity-90 transition-opacity mt-4 border border-borderSubtle rounded">OPEN ARTICLE</button>
+        <a href={article.link} target="_blank" rel="noopener noreferrer" onclick={openLink} class="block text-center w-full bg-textMain text-appBackground py-4 font-black text-[10px] tracking-widest uppercase hover:opacity-90 transition-opacity mt-4 border border-borderSubtle rounded">OPEN ARTICLE</a>
       </div>
     </div>
 
@@ -92,7 +91,7 @@
       {article.description}
       {#if article.description.length > 85}
         <div class="absolute bottom-0 right-0 pl-8 pr-1 flex items-center text-[13px]" style="background: linear-gradient(to right, transparent, var(--bg-main) 35%, var(--bg-main) 100%);">
-          <span class="text-textMain">...</span><button class="text-textSubtle ml-1 cursor-pointer hover:underline border-none bg-transparent p-0 m-0" onclick={openLink}>more</button>
+          <span class="text-textMain">...</span><a href={article.link} target="_blank" rel="noopener noreferrer" class="text-textSubtle ml-1 cursor-pointer hover:underline border-none bg-transparent p-0 m-0" onclick={openLink}>more</a>
         </div>
       {/if}
     </div>

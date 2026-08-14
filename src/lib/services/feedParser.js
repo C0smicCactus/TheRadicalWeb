@@ -391,6 +391,7 @@ export const feedParser = {
 
   cleanHtml(input) {
     if (!input) return "";
+
     // Replace block-level tags and line breaks with space to avoid word merging
     let result = input
       .replace(/<!\[CDATA\[|\]\]>/gi, '')
@@ -398,32 +399,36 @@ export const feedParser = {
       .replace(/amp;nbsp/gi, ' ')
       .replace(/<\/?(p|br|div|h[1-6]|li|ul|ol|table|tr|td|th|blockquote)[^>]*>/gi, ' ');
 
-    let prev;
-    let limit = 0;
-    if (typeof window !== 'undefined' && typeof DOMParser !== 'undefined') {
-      try {
-        const parser = new DOMParser();
-        do {
-          prev = result;
-          const doc = parser.parseFromString(result, 'text/html');
-          result = doc.body.textContent || "";
-          limit++;
-        } while (result !== prev && limit < 3);
-      } catch (e) {
-        // Fallback before
-      }
-    }
+    // Because the parser now runs on a Node server (via GitHub Actions), we don't have
+    // the browser's automatic DOMParser to decode HTML entities. We must do it manually.
+    const decodeEntities = (str) => {
+      return str
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+        .replace(/'/g, "'")
+        .replace(/&lsquo;/g, "'")
+        .replace(/&rsquo;/g, "'")
+        .replace(/&ldquo;/g, '"')
+        .replace(/&rdquo;/g, '"')
+        .replace(/&ndash;/g, '-')
+        .replace(/&mdash;/g, '—')
+        .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+        .replace(/&#x([a-fA-F0-9]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+    };
 
-    // Regex fallback for tags & entities
-    result = result
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    // 1. Decode entities first. This turns escaped code like "<div>" back into "<div>"
+    result = decodeEntities(result);
+
+    // 2. Strip all HTML tags now that they are actual tags
+    result = result.replace(/<[^>]*>/g, ' ');
+
+    // 3. Decode one last time in case there were double-encoded characters inside the text
+    result = decodeEntities(result);
+
+    // 4. Clean up whitespace
+    result = result.replace(/\s+/g, ' ').trim();
 
     return result;
   },

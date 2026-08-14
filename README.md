@@ -158,7 +158,7 @@ The goal of The Radical is to remain as neutral as possible unifying leftist new
 
 - **Was this project made using AI? If so, how much?**
 
-This project was written almost entirely with Qwen3.6 35B running locally on my laptop.
+This project was written almost entirely with Qwen3.6 35B running locally on my laptop. In the event that Qwen3.6 35B cannot solve a problem or gets stuck, I will then use Gemini 3.1 Pro. It would be an insult to professional programmers to not call this vibe coded.
 
 - **Doesn't this project/website take views away from the original publisher?**
 
