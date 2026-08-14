@@ -146,6 +146,22 @@ Want to run The Radical locally or contribute to the project?
 
 ---
 
+## ❓ FAQ
+
+- **Eww why did you include X!? Those guys are the worst!**
+
+The goal of The Radical is to remain as neutral as possible unifying leftist news in one place. If you do not want to see articles from a specific publisher, there is a setting to manually remove them.
+
+- **Was this project made using AI? If so, how much?**
+
+This project was written almost entirely with Qwen3.6 35B running locally on my laptop.
+
+- **Doesn't this project/website take views away from the original publisher?**
+
+No. I deliberately made the decision to only provide a small amount of each article to force the reader to go to the original site. Ideally, The Radical would bring more traffic to these publishers.
+
+---
+
 ## 🚀 Roadmap & Known Issues
 
 ### Things to Fix 🛠️
