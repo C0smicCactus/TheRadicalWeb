@@ -47,5 +47,47 @@ export const appFeeds = {
     "australia", "australian", "new south wales", "nsw", "sydney", "victoria", "vic", "melbourne",
     "queensland", "qld", "brisbane", "western australia", "wa", "perth", "south australia", "sa",
     "adelaide", "tasmania", "tas", "hobart", "act", "canberra", "nt", "darwin"
-  ]
+  ],
+  
+  // Map the exact publisher name to the filename inside static/logos/
+  // Example: "GREEN LEFT": "greenleft-logo.png"
+  publisherLogos: {
+    "PICKET LINE": "",
+    "GREEN LEFT": "GREEN_LEFT.jpg",
+    "RED FLAG": "RED_FLAG.jpg",
+    "RED SPARK": "RED_SPARK.jpg",
+    "SOCIALISM TODAY": "",
+    "SOLIDARITY": "",
+    "LABOR TRIBUNE": "",
+    "WORLD SOCIALIST WEB SITE": "WORLD_SOCIALIST_WEB_SITE.jpg",
+    "THE ANVIL": "",
+    "VANGUARD": "",
+    "PARTISAN!": "PARTISAN.jpg",
+    "RED ANT": "",
+    "TEMOKALATI": "",
+    "CO-OP NEWS": "CO-OP_NEWS.jpg",
+    "IWW (SOUTH EAST QUEENSLAND)": "",
+    "FREEDOM": "",
+    "DISPUTES REPORT": "",
+    "OVERLAND": "OVERLAND.jpg",
+    "SPIRIT OF EUREKA": "SPIRIT_OF_EUREKA.jpg",
+    "BLACK PEOPLES UNION": "",
+    "INDIGENOUSX": "",
+    "RED AND BLACK NOTES": "",
+    "THE GUARDIAN (CPA)": "THE_GUARDIAN_(CPA).jpg",
+    "ARENA": "",
+    "THE COMMUNIST": "",
+    "MILITANT WORKER": "",
+    "KOORI MAIL": "KOORI_MAIL.jpg",
+    "3CR": "3CR.jpg",
+    "EUREKA INITIATIVE": "",
+    "LABOURSTART": "LABOURSTART.jpg",
+    "JACOBIN": "",
+    "THE MILITANT": "",
+    "COUNTER PUNCH": "",
+    "MICHAEL WEST": "",
+    "INDEPENDENT AUSTRALIA": "",
+    "THE CONVERSATION": "",
+    "THE GUARDIAN (GNM)": ""
+  }
 };

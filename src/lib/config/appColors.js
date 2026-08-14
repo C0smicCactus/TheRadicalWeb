@@ -8,6 +8,7 @@ export const appColors = {
   textMuted: 'rgba(255,255,255,0.54)',
   textSubtle: 'rgba(255,255,255,0.38)',
   themeChoices: [
+    '#009090', // Teal
     '#f59e0b', // Amber
     '#f43f5e', // Rose
     '#8b5cf6', // Violet

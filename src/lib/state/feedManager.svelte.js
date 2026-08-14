@@ -10,6 +10,7 @@ export class FeedManager {
   // App State
   primaryColor = $state(appColors.themeChoices[0]);
   isDark = $state(true);
+  upToDateLink = $state(null);
   allArticles = $state([]);
   displayList = $state([]);
   viewedStoryMap = $state({});
@@ -74,6 +75,11 @@ export class FeedManager {
           ...Object.values(appFeeds.coreSources),
           ...Object.values(appFeeds.globalSources)
         ]);
+      }
+
+      const savedTopLink = localStorage.getItem('last_session_top_link');
+      if (savedTopLink) {
+        this.upToDateLink = savedTopLink;
       }
 
       const viewedStr = localStorage.getItem(networkConfig.viewedStoriesKey);
@@ -249,6 +255,12 @@ export class FeedManager {
     // Because the server already handles deduplication and sorting, 
     // the frontend simply accepts the server's master list directly.
     this.allArticles = freshBatch;
+
+    // Set the boundary for the NEXT session
+    if (freshBatch.length > 0) {
+      localStorage.setItem('last_session_top_link', freshBatch[0].link);
+    }
+
     this.isLoading = false;
     this.applyLogic();
     this.saveToCache();
@@ -314,6 +326,9 @@ export class FeedManager {
   resetFeed = () => {
     localStorage.removeItem(networkConfig.offlineCacheKey);
     localStorage.removeItem(networkConfig.viewedStoriesKey);
+    localStorage.removeItem('last_session_top_link');
+    this.upToDateLink = null;
+    
     this.allArticles = [];
     this.displayList = [];
     this.viewedStoryMap = {};

@@ -1,4 +1,6 @@
 <script>
+  import { base } from '$app/paths';
+  import { appFeeds } from '$lib/config/appFeeds.js';
   import StoryViewer from '$lib/components/story/StoryViewer.svelte';
 
   let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
@@ -79,15 +81,26 @@
             style="border-color: {entry.isFullyViewed ? 'var(--border-subtle)' : primaryColor};"
           >
             <div
-              class="w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center transition-opacity border border-borderSubtle"
+              class="relative w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center overflow-hidden transition-opacity border border-borderSubtle"
               style="opacity: {entry.isFullyViewed ? 0.6 : 1};"
             >
+              <!-- Fallback Initials (sits on z-0 behind the image) -->
               <span
-                class="font-black text-lg uppercase"
+                class="absolute font-black text-lg uppercase z-0"
                 style="color: {entry.isFullyViewed ? 'var(--text-subtle)' : primaryColor};"
               >
                 {entry.source.substring(0, entry.source.length > 2 ? 2 : 1)}
               </span>
+
+              <!-- Actual Logo Image (Only rendered if mapped in appFeeds.js) -->
+              {#if appFeeds.publisherLogos[entry.source]}
+                <img
+                  src="{base || ''}/logos/{appFeeds.publisherLogos[entry.source]}"
+                  alt="{entry.source}"
+                  class="relative w-full h-full object-cover z-10 bg-appSurface"
+                  onerror={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              {/if}
             </div>
           </div>
           <div

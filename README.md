@@ -172,4 +172,4 @@ No. I deliberately made the decision to only provide a small amount of each arti
 - [ ] Reliably extract and display author names across all formats.
 - [ ] Reliably scrape and display article thumbnail photos.
 - [ ] Filter out non-news articles (theory pieces, podcasts, announcements).
-- [ ] DISPUTE REPORTS sometimes works, sometimes doesn't.
+- [ ] DISPUTES REPORT sometimes works, sometimes doesn't.
