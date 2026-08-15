@@ -1,3 +1,11 @@
+/**
+ * megaFetcher.js
+ * 
+ * Centralised server-side feed aggregation engine.
+ * Fetches, parses, and normalises all RSS feeds on the backend (e.g. during hourly Github Actions)
+ * to bypass client-side browser CORS restrictions and massively reduce the payload size.
+ */
+
 import { appFeeds } from '$lib/config/appFeeds.js';
 import { feedParser } from '$lib/services/feedParser.js';
 import { networkConfig } from '$lib/config/networkConfig.js';

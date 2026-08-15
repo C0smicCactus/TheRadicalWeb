@@ -1,20 +1,28 @@
 import { base } from '$app/paths';
 import { appFeeds } from '$lib/config/appFeeds.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
-import { feedParser } from '$lib/services/feedParser.js';
 import { appColors } from '$lib/config/appColors.js';
 import { appUtils } from '$lib/utils/appUtils.js';
 import { Article } from '$lib/models/Article.js';
 
+/**
+ * FeedManager
+ * Handles the core state and data lifecycle for the news aggregator.
+ * It manages offline caches, themes, filters, and communication with the pre-compiled server feed.
+ */
 export class FeedManager {
-  // App State
+  // === UI & App State ===
   primaryColor = $state(appColors.themeChoices[0]);
   isDark = $state(true);
   upToDateLink = $state(null);
+  
+  // === Data State ===
   allArticles = $state([]);
   displayList = $state([]);
   viewedStoryMap = $state({});
   visibleCount = $state(networkConfig.articlesPerPage);
+  
+  // === Component States ===
   tabIndex = $state(0);
   totalSources = $state(0);
   completedSources = $state(0);
@@ -23,7 +31,7 @@ export class FeedManager {
   showLoadMoreButton = $state(false);
   statusMessage = $state("Ready");
 
-  // Configuration State
+  // === Configuration State ===
   extendedMode = $state(false);
   topicsEnabled = $state(false);
   allSourcesEnabled = $state(true);
@@ -31,7 +39,7 @@ export class FeedManager {
   activeFilter = $state("ALL");
   searchQuery = $state("");
 
-  // Derived Properties
+  // === Derived Properties ===
   get viewedStoryLinks() {
     return new Set(Object.keys(this.viewedStoryMap));
   }
@@ -40,18 +48,30 @@ export class FeedManager {
     return this.totalSources > 0 ? Math.floor((this.completedSources / this.totalSources) * 100) : 0;
   }
 
-  // Debounced Caching
+  // === Utilities & Caching ===
+
+  /**
+   * Persists viewed stories to local storage with a debounce to prevent spamming browser I/O.
+   */
   debouncedPersist = appUtils.debounce((data) => {
     localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(data));
   }, 1500);
 
+  /**
+   * Persists the current article feed to offline cache.
+   */
   debouncedSaveCache = appUtils.debounce((data) => {
     try {
       localStorage.setItem(networkConfig.offlineCacheKey, JSON.stringify(data));
     } catch (_) {}
   }, 2000);
 
-  // Core Methods
+  // === Core Lifecycle Methods ===
+
+  /**
+   * Initializes the application state from local storage.
+   * Restores user preferences (theme, enabled sources) and loads the offline cache before attempting network fetch.
+   */
   bootSequence = async () => {
     try {
       if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -104,6 +124,9 @@ export class FeedManager {
     this.fetchNews(this.allArticles.length > 0);
   }
 
+  /**
+   * Toggles between Dark and Light rendering modes.
+   */
   toggleTheme = () => {
     this.isDark = !this.isDark;
     if (this.isDark) {
@@ -115,6 +138,9 @@ export class FeedManager {
     }
   }
 
+  /**
+   * Cleans up viewed stories older than the maximum age threshold (default 48hrs).
+   */
   cleanupOldStories = (mapData) => {
     const now = new Date();
     let changed = false;
@@ -142,6 +168,9 @@ export class FeedManager {
     }
   }
 
+  /**
+   * Requests the static aggregated JSON feed created server-side to skip browser CORS restrictions.
+   */
   fetchNews = async (isBackground = false) => {
     if (!isBackground) {
       this.isLoading = true;
@@ -175,75 +204,9 @@ export class FeedManager {
     }
   }
 
-  /* 
-  =============================================================================
-  OLD FETCH LOGIC PRESERVED FOR SAFEKEEPING
-  =============================================================================
-  fetchNews = async (isBackground = false) => {
-    const sources = { ...appFeeds.coreSources, ...appFeeds.globalSources };
-    if (this.extendedMode) Object.assign(sources, appFeeds.extendedSources);
-
-    if (!this.allSourcesEnabled) {
-      for (const [url, name] of Object.entries(sources)) {
-        if (!this.enabledSources.has(name)) delete sources[url];
-      }
-    }
-
-    if (!isBackground) {
-      this.isLoading = true;
-      this.totalSources = Object.keys(sources).length;
-      this.completedSources = 0;
-      this.statusMessage = "Fetching...";
-    }
-
-    const freshBatch = [];
-    const entries = Object.entries(sources);
-
-    const fetchPromises = entries.map(async ([url, name]) => {
-      let text = '';
-      let ok = false;
-      for (let attempt = 0; attempt < networkConfig.maxProxyAttemptsPerFeed && !ok; attempt++) {
-        try {
-          const fetchUrl = networkConfig.wrapCorsProxy(url, attempt);
-          const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), networkConfig.feedFetchTimeoutMs);
-          const res = await fetch(fetchUrl, { signal: controller.signal });
-          clearTimeout(id);
-
-          if (res.ok) {
-            const resText = await res.text();
-            if (resText.startsWith('{') && resText.includes('"contents":')) {
-              const parsedJson = JSON.parse(resText);
-              text = parsedJson.contents || resText;
-            } else {
-              text = resText;
-            }
-            ok = true;
-          }
-        } catch (_) {}
-      }
-
-      if (ok && text) {
-        const parsed = feedParser.parse(text, name, networkConfig.maxArticlesPerFeed);
-        freshBatch.push(...parsed);
-      }
-      this.completedSources++;
-    });
-
-    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(false), networkConfig.globalFetchTimeoutMs));
-    const allDone = await Promise.race([ Promise.all(fetchPromises).then(() => true), timeoutPromise ]);
-
-    if (!allDone && !isBackground) {
-      this.statusMessage = this.allArticles.length > 0
-        ? `Timeout - showing ${this.allArticles.length} cached articles`
-        : "Timeout - showing available content";
-    }
-
-    this.processFetchedArticles(freshBatch);
-  }
-  =============================================================================
-  */
-
+  /**
+   * Evaluates the fresh network batch, replaces the local instance map, and initiates filtration.
+   */
   processFetchedArticles = (freshBatch) => {
     // If no network data, fall back entirely to local state/cache
     if (freshBatch.length === 0) {
@@ -266,23 +229,9 @@ export class FeedManager {
     this.saveToCache();
   }
 
-  /*
-  =============================================================================
-  OLD PROCESS LOGIC PRESERVED FOR SAFEKEEPING
-  =============================================================================
-  processFetchedArticles = (freshBatch) => {
-    const deduplicated = new Map();
-    for (const a of this.allArticles) deduplicated.set(a.link.toLowerCase(), a);
-    for (const a of freshBatch) deduplicated.set(a.link.toLowerCase(), a);
-
-    this.allArticles = Array.from(deduplicated.values()).sort((a, b) => b.parsedDate - a.parsedDate);
-    this.isLoading = false;
-    this.applyLogic();
-    this.saveToCache();
-  }
-  =============================================================================
-  */
-
+  /**
+   * Applies the current search queries, active tags, and hidden source lists.
+   */
   applyLogic = () => {
     let filtered = this.allArticles;
 
@@ -323,6 +272,9 @@ export class FeedManager {
     }, 300);
   }
 
+  /**
+   * Resets local cache and visual flags manually initiating a fresh reload.
+   */
   resetFeed = () => {
     localStorage.removeItem(networkConfig.offlineCacheKey);
     localStorage.removeItem(networkConfig.viewedStoriesKey);
@@ -340,7 +292,8 @@ export class FeedManager {
     this.fetchNews();
   }
 
-  // Side-effect Setters
+  // === Side-effect Setters ===
+  
   updateTheme = (color) => {
     this.primaryColor = color;
     localStorage.setItem('theme_color', color);

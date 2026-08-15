@@ -77,11 +77,11 @@
           }}
         >
           <div
-            class="p-[3px] rounded-full border-2 transition-all"
+            class="p-[3px] rounded-full border-2 transition-all flex items-center justify-center"
             style="border-color: {entry.isFullyViewed ? 'var(--border-subtle)' : primaryColor};"
           >
             <div
-              class="relative w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center overflow-hidden transition-opacity border border-borderSubtle"
+              class="relative w-16 h-16 rounded-full bg-tileBackground flex items-center justify-center overflow-hidden transition-opacity border border-borderSubtle shrink-0"
               style="opacity: {entry.isFullyViewed ? 0.6 : 1};"
             >
               <!-- Fallback Initials (sits on z-0 behind the image) -->
@@ -97,7 +97,7 @@
                 <img
                   src="{base || ''}/logos/{appFeeds.publisherLogos[entry.source]}"
                   alt="{entry.source}"
-                  class="relative w-full h-full object-cover z-10 bg-appSurface"
+                  class="relative w-full h-full object-cover object-center z-10 bg-appSurface"
                   onerror={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
               {/if}

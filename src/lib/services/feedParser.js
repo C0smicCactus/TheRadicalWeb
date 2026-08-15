@@ -54,11 +54,6 @@ export const feedParser = {
         try { itemHost = new URL(link).hostname.replace(/^www\./, ''); } catch(e) {}
         if (registeredHosts.includes(itemHost)) return false; 
         
-        let publisher = "UNKNOWN PUBLISHER";
-        const pubMatch = (bestDesc || '').match(/Source:\s*(.*?)(?:\s+http|<|$)/i);
-        if (pubMatch) publisher = pubMatch[1].trim().toUpperCase();
-        articleSourceName = `${publisher} via LABOURSTART`;
-        
         if (title.startsWith('Australia: ')) title = title.substring(11).trim();
       }
 

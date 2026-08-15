@@ -1,5 +1,22 @@
 <script>
   let { width, primaryColor, isDark, onToggleTheme, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings } = $props();
+
+  let mouseDownTime = $state(0);
+
+  function handleLogoMousedown() {
+    mouseDownTime = Date.now();
+  }
+
+  function handleLogoMouseup() {
+    const elapsedTime = Date.now() - mouseDownTime;
+    // Treat as click if mouse was down for less than 300ms
+    if (elapsedTime < 300) {
+      // Only scroll to top on mobile view (when showing "TR" instead of "THE RADICAL")
+      if (width <= 500) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
 </script>
 
 <header class="flex flex-col w-full z-20">
@@ -17,7 +34,7 @@
       <!-- Brand Logo -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none flex-shrink-0" style="color: {primaryColor};" onclick={onLogoTap}>
+      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none flex-shrink-0" style="color: {primaryColor};" onmousedown={handleLogoMousedown} onmouseup={handleLogoMouseup}>
         {width > 500 ? "THE RADICAL" : "TR"}
       </div>
 

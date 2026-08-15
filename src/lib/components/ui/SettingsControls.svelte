@@ -11,6 +11,8 @@
   } = $props();
 
   const filterOptions = ["ALL", ...appTopics.map(t => t.name)];
+  
+  let showResetConfirm = $state(false);
 </script>
 
 <div class="flex flex-col gap-5 w-full">
@@ -69,6 +71,33 @@
       {/each}
     </div>
   </div>
+
+  <hr class="border-borderSubtle" />
+
+  <!-- Reset Feed Button -->
+  {#if showResetConfirm}
+    <div class="bg-appSurface border border-red-500/50 p-4 text-sm rounded shadow-sm">
+      <div class="font-bold text-white mb-2">Reset Feed?</div>
+      <div class="text-xs text-textMuted mb-4 leading-relaxed">
+        This will wipe all cached articles and viewed story tracking. A fresh feed update will load immediately.
+      </div>
+      <div class="flex justify-end space-x-4 mt-2">
+        <button onclick={() => showResetConfirm = false} class="text-textSubtle hover:text-white text-xs font-bold uppercase transition-colors">
+          Cancel
+        </button>
+        <button onclick={() => { showResetConfirm = false; fm.resetFeed(); }} class="text-red-500 hover:text-red-400 font-black text-xs uppercase transition-colors">
+          RESET
+        </button>
+      </div>
+    </div>
+  {:else}
+    <button onclick={() => showResetConfirm = true} class="w-full flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 rounded hover:bg-red-500/20 transition-colors">
+      <div class="flex items-center space-x-3 text-[10px] font-black tracking-widest text-red-500 uppercase">
+        <i class="fa-solid fa-rotate-right text-xs"></i><span>RESET FEED</span>
+      </div>
+      <i class="fa-solid fa-triangle-exclamation text-xs text-red-500/60"></i>
+    </button>
+  {/if}
 
   <hr class="border-borderSubtle" />
 
