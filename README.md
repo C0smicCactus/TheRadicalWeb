@@ -175,3 +175,4 @@ No. I deliberately made the decision to only provide a small amount of each arti
 - [ ] Reliably scrape and display article thumbnail photos.
 - [ ] Filter out non-news articles (theory pieces, podcasts, announcements).
 - [ ] DISPUTES REPORT sometimes works, sometimes doesn't.
+- [ ] Global sources often show non-Australian articles.
