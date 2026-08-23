@@ -1,135 +1,98 @@
+// =============================================================================
+// Feed Parser
+// Main orchestrator for parsing RSS/Atom feed XML into Article objects
+// =============================================================================
+
 import { Article } from '$lib/models/Article.js';
 import { appFeeds } from '$lib/config/appFeeds.js';
-import { appTopics } from '$lib/config/appTopics.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
 import { feedFilterRules } from '$lib/utils/feedFilterRules.js';
+import { getRegisteredHosts, parseDate, cleanHtml } from './feedParser.utils.js';
+import { calculateTags } from './tagCalculator.js';
+import { extractAuthor } from './authorExtractor.js';
+import { scrapeUrlForImage, scrapeImage, clearImageScrapeCache } from './imageScraper.js';
+import { feedOverrides } from './feedOverrides.js';
 
-// Shared image scraping cache to deduplicate requests across all components
-const imageScrapeCache = new Map();
+// =============================================================================
+// Private helper: Assembles extracted strings into a clean Article instance
+// =============================================================================
+function processExtractedItem(titleStr, linkStr, sourceName, feedUrl, registeredHosts, maxArticles, results, title, link, pubDateStr, summaryStr, descStr, contentEncodedStr, authorTagContent) {
+  // Convert relative URLs to absolute URLs using the feed URL as the base
+  if (link && !link.match(/^https?:\/\//i) && feedUrl) {
+    try {
+      link = new URL(link, feedUrl).href;
+    } catch (e) {
+      // Keep original if URL construction fails
+    }
+  }
 
-// Cache registered hosts once
-let _registeredHosts = null;
-function getRegisteredHosts() {
-  if (_registeredHosts) return _registeredHosts;
-  const allFeedUrls = [
-    ...Object.keys(appFeeds.coreSources),
-    ...Object.keys(appFeeds.globalSources),
-    ...Object.keys(appFeeds.extendedSources)
-  ];
-  _registeredHosts = allFeedUrls.map(url => {
-    try { return new URL(url).hostname.replace(/^www\./, ''); } catch(e) { return ''; }
-  }).filter(Boolean);
-  return _registeredHosts;
+  if (Object.values(appFeeds.globalSources).includes(sourceName)) {
+    const isRelevant = appFeeds.auKeywords.some(k => {
+      const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
+      return pattern.test(title.toLowerCase());
+    });
+    if (!isRelevant) return false;
+  }
+
+  let bestDesc = summaryStr?.trim().length > 0 ? summaryStr : descStr;
+  if (!bestDesc && contentEncodedStr) bestDesc = contentEncodedStr;
+  const searchContent = `${summaryStr || ''} ${descStr || ''} ${contentEncodedStr || ''}`;
+
+  let author = extractAuthor(authorTagContent, title, searchContent, sourceName);
+  let articleSourceName = sourceName;
+
+  // SPECIAL RULE: LABOURSTART
+  if (sourceName === "LABOURSTART") {
+    const lsOverride = feedOverrides.processLabourStart(title, link, registeredHosts);
+    if (lsOverride.skip) return false;
+    title = lsOverride.title;
+  }
+
+  // SPECIAL RULE: DISPUTES REPORT
+  if (sourceName === "DISPUTES REPORT" && (contentEncodedStr || bestDesc)) {
+    const fullHtmlContent = contentEncodedStr || bestDesc;
+    const extracted = feedOverrides.extractDisputesReport({
+      link, fullHtmlContent, articleSourceName, pubDateStr, author, maxArticles, currentResults: results.length
+    });
+
+    if (extracted.length > 0) {
+      results.push(...extracted);
+      return true; // Stop standard processing, we handled the sub-articles
+    }
+  }
+
+  const tags = calculateTags(title, bestDesc, searchContent);
+  const scrapedImg = scrapeImage(searchContent || bestDesc);
+
+  let finalDescription = cleanHtml(bestDesc);
+  // Trim long descriptions to maintain consistent UI and XML sizes
+  if (finalDescription.length > 350) {
+    const truncated = finalDescription.substring(0, 350);
+    const lastSpace = truncated.lastIndexOf(' ');
+    finalDescription = truncated.substring(0, lastSpace > 0 ? lastSpace : 350) + '...';
+  }
+
+  const article = new Article({
+    title,
+    link,
+    source: articleSourceName,
+    topics: tags,
+    description: finalDescription,
+    thumbnail: networkConfig.wrapImageProxy(scrapedImg),
+    parsedDate: parseDate(pubDateStr),
+    author: author || null,
+    dominantColor: null
+  });
+
+  if (!feedFilterRules.shouldExcludeArticle(article)) results.push(article);
+  return true;
 }
 
 export const feedParser = {
-  parse(rawXml, sourceName, maxArticles = null) {
+  parse(rawXml, sourceName, feedUrl, maxArticles = null) {
     if (!rawXml) return [];
     const results = [];
     const registeredHosts = getRegisteredHosts();
-
-    // Helper closure to assemble extracted strings into a clean Article instance
-    const processExtractedItem = (titleStr, linkStr, pubDateStr, summaryStr, descStr, contentEncodedStr, authorTagContent) => {
-      let title = this.cleanHtml(titleStr || 'Untitled');
-      let link = (linkStr || '').trim();
-
-      if (Object.values(appFeeds.globalSources).includes(sourceName)) {
-        const isRelevant = appFeeds.auKeywords.some(k => {
-          const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
-          return pattern.test(title.toLowerCase());
-        });
-        if (!isRelevant) return false;
-      }
-
-      let bestDesc = summaryStr?.trim().length > 0 ? summaryStr : descStr;
-      if (!bestDesc && contentEncodedStr) bestDesc = contentEncodedStr;
-      const searchContent = `${summaryStr || ''} ${descStr || ''} ${contentEncodedStr || ''}`;
-
-      let author = this.extractAuthor(authorTagContent, title, searchContent, sourceName);
-      let articleSourceName = sourceName;
-
-      // SPECIAL RULE: LABOURSTART
-      if (sourceName === "LABOURSTART") {
-        let itemHost = '';
-        try { itemHost = new URL(link).hostname.replace(/^www\./, ''); } catch(e) {}
-        if (registeredHosts.includes(itemHost)) return false; 
-        
-        if (title.startsWith('Australia: ')) title = title.substring(11).trim();
-      }
-
-      // SPECIAL RULE: DISPUTES REPORT
-      if (sourceName === "DISPUTES REPORT" && (contentEncodedStr || bestDesc)) {
-        // Broadened to detect h2, h3, and h4 tags in case the author changes formatting
-        const hRegex = /<h[234][^>]*>([\s\S]*?)<\/h[234]>([\s\S]*?)(?=<h[234]>|$)/gi;
-        let matchH;
-        let hasSubArticles = false;
-        const fullHtmlContent = contentEncodedStr || bestDesc;
-        
-        while ((matchH = hRegex.exec(fullHtmlContent)) !== null) {
-          const subTitle = this.cleanHtml(matchH[1]).trim();
-          if (!subTitle) continue;
-          
-          hasSubArticles = true;
-          const subContent = matchH[2];
-          
-          let subDescText = this.cleanHtml(subContent);
-          // Trim long descriptions to maintain consistent UI and XML sizes
-          if (subDescText.length > 350) {
-            const truncated = subDescText.substring(0, 350);
-            const lastSpace = truncated.lastIndexOf(' ');
-            subDescText = truncated.substring(0, lastSpace > 0 ? lastSpace : 350) + '...';
-          }
-          
-          const subImg = this.scrapeImage(subContent);
-          const subTags = this.calculateTags(subTitle, subDescText, subContent);
-          const uniqueHash = subTitle.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-          const uniqueLink = `${link}#${uniqueHash}`;
-          
-          const subArticle = new Article({
-            title: subTitle,
-            link: uniqueLink, 
-            source: articleSourceName,
-            topics: subTags,
-            description: subDescText,
-            thumbnail: networkConfig.wrapImageProxy(subImg),
-            parsedDate: this.parseDate(pubDateStr),
-            author: author || null,
-            dominantColor: null
-          });
-          
-          if (!feedFilterRules.shouldExcludeArticle(subArticle)) results.push(subArticle);
-          if (maxArticles !== null && results.length >= maxArticles) return true;
-        }
-        
-        if (hasSubArticles) return true; 
-      }
-
-      const tags = this.calculateTags(title, bestDesc, searchContent);
-      const scrapedImg = this.scrapeImage(searchContent || bestDesc);
-
-      let finalDescription = this.cleanHtml(bestDesc);
-      // Trim long descriptions to maintain consistent UI and XML sizes
-      if (finalDescription.length > 350) {
-        const truncated = finalDescription.substring(0, 350);
-        const lastSpace = truncated.lastIndexOf(' ');
-        finalDescription = truncated.substring(0, lastSpace > 0 ? lastSpace : 350) + '...';
-      }
-
-      const article = new Article({
-        title,
-        link,
-        source: articleSourceName,
-        topics: tags,
-        description: finalDescription,
-        thumbnail: networkConfig.wrapImageProxy(scrapedImg),
-        parsedDate: this.parseDate(pubDateStr),
-        author: author || null,
-        dominantColor: null
-      });
-
-      if (!feedFilterRules.shouldExcludeArticle(article)) results.push(article);
-      return true;
-    };
 
     let domParsed = false;
 
@@ -158,7 +121,7 @@ export const feedParser = {
               const author = item.getElementsByTagNameNS("*", "creator")[0]?.textContent ||
                              item.querySelector("author > name, contributor > name, author")?.textContent;
 
-              processExtractedItem(title, link, pubDate, summary, desc, content, author);
+              processExtractedItem(title, link, sourceName, feedUrl, registeredHosts, maxArticles, results, title, link, pubDate, summary, desc, content, author);
               if (maxArticles !== null && results.length >= maxArticles) break;
             }
           }
@@ -188,7 +151,7 @@ export const feedParser = {
 
         const summaryMatch = content.match(/<summary.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/summary>/i);
         const descTagMatch = content.match(/<description.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
-        const contentEncodedMatch = content.match(/<content:encoded.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i) || 
+        const contentEncodedMatch = content.match(/<content:encoded.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i) ||
                                     content.match(/<content.*?>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content>/i);
 
         let authorTagContent = '';
@@ -209,6 +172,13 @@ export const feedParser = {
         processExtractedItem(
           titleMatch ? titleMatch[1] : undefined,
           linkMatch ? linkMatch[1] : undefined,
+          sourceName,
+          feedUrl,
+          registeredHosts,
+          maxArticles,
+          results,
+          titleMatch ? titleMatch[1] : undefined,
+          linkMatch ? linkMatch[1] : undefined,
           pubDateMatch ? pubDateMatch[1] : undefined,
           summaryMatch ? summaryMatch[1] : undefined,
           descTagMatch ? descTagMatch[1] : undefined,
@@ -223,242 +193,23 @@ export const feedParser = {
     return results;
   },
 
-  calculateTags(title, descText, fullContent) {
-    const tags = [];
-    const textLower = `${title} ${descText} ${fullContent}`.toLowerCase();
-    const titleLower = title.toLowerCase();
-
-    for (const topic of appTopics) {
-      let score = 0.0;
-      for (const kw of topic.keywords) {
-        const kwLower = kw.keyword.toLowerCase();
-        const isMultiWord = kwLower.includes(' ');
-
-        if (titleLower.includes(kwLower)) {
-          score += kw.weight * 3.0;
-          if (isMultiWord) score += 1.0;
-        }
-        if (textLower.includes(kwLower)) {
-          score += kw.weight * 1.0;
-          if (isMultiWord) score += 0.5;
-        }
-      }
-
-      const hasExclusion = topic.exclusions.some(excl => textLower.includes(excl.toLowerCase()));
-      if (score >= topic.threshold && !hasExclusion) {
-        tags.push(topic.name);
-      }
-    }
-    return tags;
-  },
-
-  extractAuthor(authorTag, title, content, sourceName) {
-    let author = this.cleanHtml(authorTag || '').trim();
-
-    if (author.toLowerCase().startsWith('by ')) {
-      author = author.substring(3).trim();
-    }
-
-    // Handle generic email formatted authors (e.g. email@example.com (John Doe))
-    const emailMatch = author.match(/^[^\s]+@[^\s]+\s+\(([^)]+)\)$/);
-    if (emailMatch) {
-      author = emailMatch[1].trim();
-    }
-
-    const isInvalidAuthor = (name) => {
-      if (!name) return true;
-      const lower = name.toLowerCase();
-      if (lower.includes('@') || lower.includes('http')) return true;
-      const genericTerms = ['admin', 'editor', 'staff', 'news desk', 'webmaster', 'contributor', 'publisher', 'team', 'newsroom'];
-      if (genericTerms.some(x => lower.includes(x))) return true;
-      if (lower === sourceName.toLowerCase() || lower.includes(sourceName.toLowerCase())) return true;
-      return false;
-    };
-
-    // Fallback: Use Regex on text contents to find explicit byline
-    let extractedFromText = '';
-    const plainText = this.cleanHtml(content);
-
-    // Matches localized Title Cased names
-    const namePattern = "([A-Z\u00C0-\u017F][a-zA-Z\u00C0-\u017F\\-'.]+(?:\\s+[A-Z\u00C0-\u017F][a-zA-Z\u00C0-\u017F\\-'.]+){1,3})";
-    const byRegexes = [
-      new RegExp(`(?:^|\\n|\\s)(?:[Ww]ords|[Ww]ritten|[Rr]eport|[Rr]eview)\\s+(?:[Bb]y)\\s*:?\\s*${namePattern}\\b`),
-      new RegExp(`(?:^|\\n|\\s)(?:[Bb]y)\\s*:?\\s*${namePattern}\\b`),
-      new RegExp(`^${namePattern}\\b(?=\\s*[-—|])`)
-    ];
-
-    for (const reg of byRegexes) {
-      const textsToSearch = [title, plainText];
-      for (const text of textsToSearch) {
-        const match = text.match(reg);
-        if (match && match[1]) {
-          const possibleName = match[1].trim();
-          const lowerName = possibleName.toLowerCase();
-          
-          // Guard against false positives like "By Sunday", "By The Government"
-          const invalidWords = [
-            'the', 'this', 'that', 'a', 'an', 'our', 'some', 'any', 'no', 'in',
-            'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 
-            'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december',
-            'yesterday', 'today', 'tomorrow', 'admin', 'staff', 'editor', 'associated', 'reuters', 'aap', 'guest', 'contributor', 'correspondent'
-          ];
-          
-          const firstWord = lowerName.split(' ')[0];
-          if (!invalidWords.includes(firstWord) && !isInvalidAuthor(possibleName)) {
-            extractedFromText = possibleName;
-            break;
-          }
-        }
-      }
-      if (extractedFromText) break;
-    }
-
-    if (!author || isInvalidAuthor(author)) {
-      author = extractedFromText;
-    }
-
-    // Force proper Title Case as requested - applies to ALL author names
-    if (author) {
-      author = author.split(' ').map(word => {
-        return word.split('-').map(part => {
-          if (!part) return '';
-          const quoteSplit = part.split("'");
-          if (quoteSplit.length > 1) {
-            return quoteSplit.map(q => q ? q.charAt(0).toUpperCase() + q.slice(1).toLowerCase() : '').join("'");
-          }
-          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-        }).join('-');
-      }).join(' ');
-    }
-
-    return author;
-  },
-
   async scrapeUrlForImage(url, signal) {
-    if (!url) return "";
-
-    // Deduplication: return existing promise if already scraping this URL
-    if (imageScrapeCache.has(url)) {
-      return imageScrapeCache.get(url);
-    }
-
-    const promise = (async () => {
-      try {
-        const finalUrl = networkConfig.wrapCorsProxy(url);
-        const controller = new AbortController();
-        // Use provided signal or create internal one
-        const abortSignal = signal || controller.signal;
-        const timeoutId = setTimeout(() => controller.abort(), networkConfig.imageScrapeTimeoutMs);
-
-        // Listen for external abort (e.g., component unmount)
-        if (signal) {
-          signal.addEventListener('abort', () => controller.abort());
-        }
-
-        const res = await fetch(finalUrl, { signal: abortSignal });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const text = await res.text();
-          const ogMatch = text.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
-                          text.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-          const result = ogMatch ? ogMatch[1] : "";
-          // Cache the result (not the promise) for future requests
-          imageScrapeCache.set(url, Promise.resolve(result));
-          return result;
-        }
-      } catch (e) {
-        // On error, remove from cache so future requests can retry
-        imageScrapeCache.delete(url);
-        // Ignored
-      }
-      return "";
-    })();
-
-    imageScrapeCache.set(url, promise);
-    return promise;
+    return scrapeUrlForImage(url, signal);
   },
 
-  // Clear a URL from the scrape cache (useful for cleanup or manual refresh)
   clearImageScrapeCache(url) {
-    if (url) {
-      imageScrapeCache.delete(url);
-    } else {
-      imageScrapeCache.clear();
-    }
+    clearImageScrapeCache(url);
   },
 
   parseDate(s) {
-    if (!s) return new Date();
-    const parsed = new Date(s);
-    if (!isNaN(parsed.getTime())) return parsed;
-    try {
-      const c = s.split(' +')[0].split(' -')[0];
-      const fallback = new Date(c);
-      return isNaN(fallback.getTime()) ? new Date() : fallback;
-    } catch (e) {
-      return new Date();
-    }
+    return parseDate(s);
   },
 
   cleanHtml(input) {
-    if (!input) return "";
-
-    let result = input.toString();
-
-    // 1. Remove CDATA wrappers
-    result = result.replace(/<!\[CDATA\[/gi, '').replace(/\]\]>/gi, '');
-
-    // 2. Decode entities (Loop up to 3 times to handle double/triple encoding)
-    const decodeEntities = (str) => {
-      let prev;
-      let passes = 0;
-      do {
-        prev = str;
-        // Using string concatenation prevents text editors and chat interfaces 
-        // from accidentally converting the codes into visual symbols.
-        str = str
-          .replace(new RegExp('&' + 'amp;', 'gi'), '&')
-          .replace(new RegExp('&' + 'lt;', 'gi'), '<')
-          .replace(new RegExp('&' + 'gt;', 'gi'), '>')
-          .replace(new RegExp('&' + 'quot;', 'gi'), '"')
-          .replace(new RegExp('&' + 'apos;', 'gi'), "'")
-          .replace(new RegExp('&' + 'lsquo;', 'gi'), "'")
-          .replace(new RegExp('&' + 'rsquo;', 'gi'), "'")
-          .replace(new RegExp('&' + 'ldquo;', 'gi'), '"')
-          .replace(new RegExp('&' + 'rdquo;', 'gi'), '"')
-          .replace(new RegExp('&' + 'ndash;', 'gi'), '-')
-          .replace(new RegExp('&' + 'mdash;', 'gi'), '—')
-          .replace(new RegExp('&' + 'nbsp;', 'gi'), ' ')
-          // Catch numeric entity codes (with or without semicolons)
-          .replace(/&#(\d+);?/g, (match, dec) => String.fromCharCode(dec))
-          .replace(/&#x([a-fA-F0-9]+);?/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
-        passes++;
-      } while (str !== prev && passes < 3);
-      return str;
-    };
-
-    result = decodeEntities(result);
-
-    // 3. Replace block-level tags and line breaks with space to avoid word merging
-    result = result.replace(/<\/?(p|br|div|h[1-6]|li|ul|ol|table|tr|td|th|blockquote)[^>]*>/gi, ' ');
-
-    // 4. Strip all remaining complete HTML tags
-    result = result.replace(/<[^>]*>/g, ' ');
-
-    // 5. Strip any truncated HTML tag at the very end of the string (e.g. "<div class=")
-    result = result.replace(/<[^>]*$/, '');
-
-    // 6. Final cleanup of whitespace and stray encoded characters
-    result = decodeEntities(result);
-    result = result.replace(/\s+/g, ' ').trim();
-
-    return result;
+    return cleanHtml(input);
   },
 
   scrapeImage(html) {
-    if (!html) return '';
-    const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-    return match ? match[1] : '';
+    return scrapeImage(html);
   }
 };

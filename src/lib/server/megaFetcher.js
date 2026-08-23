@@ -70,7 +70,7 @@ async function buildFeed() {
 
     if (success && text) {
       // The feedParser automatically falls back to Regex when DOMParser is unavailable in Node.js
-      const parsed = feedParser.parse(text, name, 25);
+      const parsed = feedParser.parse(text, name, url, 25);
       allArticles.push(...parsed);
     }
   });

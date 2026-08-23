@@ -1,5 +1,6 @@
 <script>
   import { appFeeds } from '$lib/config/appFeeds.js';
+  import ToggleSwitch from '../ui/ToggleSwitch.svelte';
 
   let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();
 
@@ -49,15 +50,7 @@
         <div class="font-bold text-[13px] text-textMain">ALL SOURCES</div>
         <div class="text-[11px] text-textMuted">Include all signals automatically.</div>
       </div>
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={localAllEnabled}
-          onchange={(e) => localAllEnabled = /** @type {HTMLInputElement} */ (e.currentTarget).checked}
-          class="sr-only peer"
-        >
-        <div class="w-9 h-5 bg-highlightOverlay border border-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {localAllEnabled ? primaryColor : ''}"></div>
-      </label>
+      <ToggleSwitch checked={localAllEnabled} onchange={(e) => localAllEnabled = /** @type {HTMLInputElement} */ (e.currentTarget).checked} primaryColor={primaryColor} />
     </div>
 
     <div class="flex-1 overflow-y-auto mb-6 pr-2 space-y-1" style="opacity: {localAllEnabled ? 0.4 : 1.0}; pointer-events: {localAllEnabled ? 'none' : 'auto'};">

@@ -1,6 +1,8 @@
 <script>
   import { appTopics } from '$lib/config/appTopics.js';
   import { appColors } from '$lib/config/appColors.js';
+  import ToggleSwitch from './ToggleSwitch.svelte';
+  import ActionLink from './ActionLink.svelte';
 
   let { 
     fm,
@@ -22,14 +24,9 @@
       <div class="text-xs font-bold text-textMain">EXTENDED COVERAGE</div>
       <div class="text-[10px] text-textMuted">Include broader independent sources.</div>
     </div>
-    <label class="relative inline-flex items-center cursor-pointer">
-      <input type="checkbox" checked={fm.extendedMode} onchange={(e) => fm.setExtendedMode(e.currentTarget.checked)} class="sr-only peer">
-      <div class="w-9 h-5 bg-borderSubtle border border-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {fm.extendedMode ? fm.primaryColor : ''}"></div>
-    </label>
+    <ToggleSwitch checked={fm.extendedMode} onchange={(e) => fm.setExtendedMode(e.currentTarget.checked)} primaryColor={fm.primaryColor} />
   </div>
   
-  <hr class="border-borderSubtle" />
-
   <!-- Topics Toggle -->
   <div class="flex items-center justify-between">
     <div>
@@ -37,10 +34,7 @@
       <div class="text-[10px] text-textMuted">Show topics on articles and filters.</div>
       <div class="text-[9px] text-textMuted font-bold uppercase mt-1">(Beta - doesn't work properly)</div>
     </div>
-    <label class="relative inline-flex items-center cursor-pointer">
-      <input type="checkbox" checked={fm.topicsEnabled} onchange={(e) => fm.setTopicsEnabled(e.currentTarget.checked)} class="sr-only peer">
-      <div class="w-9 h-5 bg-borderSubtle border border-borderSubtle rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="background-color: {fm.topicsEnabled ? fm.primaryColor : ''}"></div>
-    </label>
+    <ToggleSwitch checked={fm.topicsEnabled} onchange={(e) => fm.setTopicsEnabled(e.currentTarget.checked)} primaryColor={fm.primaryColor} />
   </div>
 
   <hr class="border-borderSubtle" />
@@ -103,20 +97,8 @@
 
   <!-- Action Links -->
   <div class="flex flex-col gap-2">
-    <button onclick={onShowSources} class="w-full flex items-center justify-between p-3 bg-highlightOverlay border border-borderSubtle rounded hover:bg-highlightOverlay transition-colors">
-      <div class="flex items-center space-x-3 text-[10px] font-black tracking-widest text-textMain uppercase">
-        <i class="fa-solid fa-satellite-dish text-xs" style="color: {fm.primaryColor};"></i><span>SIGNAL SOURCES</span>
-      </div>
-    </button>
-    <button onclick={onShowAbout} class="w-full flex items-center justify-between p-3 bg-highlightOverlay border border-borderSubtle rounded hover:bg-highlightOverlay transition-colors">
-      <div class="flex items-center space-x-3 text-[10px] font-black tracking-widest text-textMain uppercase">
-        <i class="fa-solid fa-circle-info text-xs" style="color: {fm.primaryColor};"></i><span>ABOUT PROJECT</span>
-      </div>
-    </button>
-    <button onclick={onShowGitHub} class="w-full flex items-center justify-between p-3 bg-highlightOverlay border border-borderSubtle rounded hover:bg-highlightOverlay transition-colors">
-      <div class="flex items-center space-x-3 text-[10px] font-black tracking-widest text-textMain uppercase">
-        <i class="fa-brands fa-github text-xs" style="color: {fm.primaryColor};"></i><span>GITHUB</span>
-      </div>
-    </button>
+    <ActionLink onclick={onShowSources} icon="fa-solid fa-satellite-dish" text="SIGNAL SOURCES" primaryColor={fm.primaryColor} />
+    <ActionLink onclick={onShowAbout} icon="fa-solid fa-circle-info" text="ABOUT PROJECT" primaryColor={fm.primaryColor} />
+    <ActionLink onclick={onShowGitHub} icon="fa-brands fa-github" text="GITHUB" primaryColor={fm.primaryColor} />
   </div>
 </div>

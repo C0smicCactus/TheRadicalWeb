@@ -1,27 +1,41 @@
 import { base } from '$app/paths';
 import { appFeeds } from '$lib/config/appFeeds.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
-import { appColors } from '$lib/config/appColors.js';
 import { appUtils } from '$lib/utils/appUtils.js';
 import { Article } from '$lib/models/Article.js';
+import { ThemeManager } from './themeManager.svelte.js';
+import { SettingsManager } from './settingsManager.svelte.js';
 
 /**
  * FeedManager
  * Handles the core state and data lifecycle for the news aggregator.
  * It manages offline caches, themes, filters, and communication with the pre-compiled server feed.
+ * 
+ * Architecture: Delegates theme and settings concerns to sub-managers (ThemeManager, SettingsManager)
+ * while proxying their state via getters so existing UI components continue to work unchanged.
  */
 export class FeedManager {
-  // === UI & App State ===
-  primaryColor = $state(appColors.themeChoices[0]);
-  isDark = $state(true);
-  upToDateLink = $state(null);
-  
+  // === Sub-Managers ===
+  themeManager = new ThemeManager();
+  settingsManager = new SettingsManager();
+
+  // === UI & App State Proxy Getters (Keeps existing UI components working!) ===
+  get primaryColor() { return this.themeManager.primaryColor; }
+  get isDark() { return this.themeManager.isDark; }
+
+  // === Configuration State Proxy Getters ===
+  get extendedMode() { return this.settingsManager.extendedMode; }
+  get topicsEnabled() { return this.settingsManager.topicsEnabled; }
+  get allSourcesEnabled() { return this.settingsManager.allSourcesEnabled; }
+  get enabledSources() { return this.settingsManager.enabledSources; }
+
   // === Data State ===
+  upToDateLink = $state(null);
   allArticles = $state([]);
   displayList = $state([]);
   viewedStoryMap = $state({});
   visibleCount = $state(networkConfig.articlesPerPage);
-  
+
   // === Component States ===
   tabIndex = $state(0);
   totalSources = $state(0);
@@ -30,12 +44,6 @@ export class FeedManager {
   isLoadingMore = $state(false);
   showLoadMoreButton = $state(false);
   statusMessage = $state("Ready");
-
-  // === Configuration State ===
-  extendedMode = $state(false);
-  topicsEnabled = $state(false);
-  allSourcesEnabled = $state(true);
-  enabledSources = $state(new Set());
   activeFilter = $state("ALL");
   searchQuery = $state("");
 
@@ -74,28 +82,9 @@ export class FeedManager {
    */
   bootSequence = async () => {
     try {
-      if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        this.isDark = false;
-      } else {
-        this.isDark = true;
-      }
-
-      const colorVal = localStorage.getItem('theme_color');
-      if (colorVal) this.primaryColor = colorVal;
-
-      this.extendedMode = localStorage.getItem('extended_coverage') === 'true';
-      this.topicsEnabled = localStorage.getItem('topics_enabled') === 'true';
-      this.allSourcesEnabled = localStorage.getItem('all_sources_enabled') !== 'false';
-
-      const savedSources = localStorage.getItem('enabled_sources');
-      if (savedSources) {
-        this.enabledSources = new Set(JSON.parse(savedSources));
-      } else {
-        this.enabledSources = new Set([
-          ...Object.values(appFeeds.coreSources),
-          ...Object.values(appFeeds.globalSources)
-        ]);
-      }
+      // Initialize sub-managers
+      this.themeManager.init();
+      this.settingsManager.init();
 
       const savedTopLink = localStorage.getItem('last_session_top_link');
       if (savedTopLink) {
@@ -122,20 +111,6 @@ export class FeedManager {
     } catch (_) {}
     
     this.fetchNews(this.allArticles.length > 0);
-  }
-
-  /**
-   * Toggles between Dark and Light rendering modes.
-   */
-  toggleTheme = () => {
-    this.isDark = !this.isDark;
-    if (this.isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
   }
 
   /**
@@ -292,28 +267,22 @@ export class FeedManager {
     this.fetchNews();
   }
 
-  // === Side-effect Setters ===
+  // === Side-effect Setters (Delegated to Sub-Managers) ===
   
-  updateTheme = (color) => {
-    this.primaryColor = color;
-    localStorage.setItem('theme_color', color);
-  }
+  toggleTheme = () => this.themeManager.toggleTheme();
+  
+  updateTheme = (color) => this.themeManager.updateTheme(color);
+
+  setTopicsEnabled = (v) => this.settingsManager.setTopicsEnabled(v);
+
+  setExtendedMode = (v) => {
+    this.settingsManager.setExtendedMode(v, () => this.applyLogic());
+    if (v) this.fetchNews();
+  };
 
   setSearchQuery = (q) => {
     this.searchQuery = q;
     this.applyLogic();
-  }
-
-  setExtendedMode = (v) => {
-    this.extendedMode = v;
-    localStorage.setItem('extended_coverage', v);
-    this.applyLogic();
-    if (v) this.fetchNews();
-  }
-
-  setTopicsEnabled = (v) => {
-    this.topicsEnabled = v;
-    localStorage.setItem('topics_enabled', v);
   }
 
   setActiveFilter = (f) => {
@@ -322,11 +291,7 @@ export class FeedManager {
   }
 
   setSourcesEnabled = (all, set) => {
-    this.allSourcesEnabled = all;
-    this.enabledSources = set;
-    localStorage.setItem('all_sources_enabled', all);
-    localStorage.setItem('enabled_sources', JSON.stringify(Array.from(set)));
-    this.applyLogic();
+    this.settingsManager.setSourcesEnabled(all, set, () => this.applyLogic());
     this.fetchNews();
   }
 }
