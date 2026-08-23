@@ -1,4 +1,10 @@
-export const appFeeds = {
+/**
+ * @file feeds.js
+ * @description RSS feed source configuration defining core, global, and extended feed URLs
+ * along with publisher logo mappings and Australia-specific keyword filters.
+ */
+
+export const feeds = {
   coreSources: {
     "https://www.3cr.org.au/news.xml": "3CR",
     "https://arena.org.au/feed": "ARENA",
@@ -25,6 +31,7 @@ export const appFeeds = {
     "https://redantcollective.org/feed": "RED ANT",
     "https://redflag.org.au/rss/": "RED FLAG",
     "https://red-spark.org/tag/australia/feed": "RED SPARK",
+    "https://www.redblacknotes.com/feed": "RED AND BLACK NOTES",
     "https://rahu.org.au/category/articles/feed": "RENTERS & HOUSING UNION",
     "https://www.search.org.au/search_news.rss": "SEARCH FOUNDATION",
     "https://socialismtoday.au/feed": "SOCIALISM TODAY",
@@ -40,7 +47,7 @@ export const appFeeds = {
   globalSources: {
     "https://jacobin.com/feed": "JACOBIN",
     "https://www.counterpunch.org/feed": "COUNTER PUNCH",
-    "https://themilitant.com/feed": "THE MILITANT"
+    "https://theMilitant.com/feed": "THE MILITANT"
   },
   extendedSources: {
     "https://michaelwest.com.au/category/latest-posts/feed/": "MICHAEL WEST",
@@ -53,7 +60,7 @@ export const appFeeds = {
     "queensland", "qld", "brisbane", "western australia", "wa", "perth", "south australia", "sa",
     "adelaide", "tasmania", "tas", "hobart", "act", "canberra", "nt", "darwin"
   ],
-  
+
   // Map the exact publisher name to the filename inside static/logos/
   // Example: "GREEN LEFT": "greenleft-logo.png"
   publisherLogos: {
@@ -81,6 +88,7 @@ export const appFeeds = {
     "RED ANT": "",
     "RED FLAG": "RED_FLAG.jpg",
     "RED SPARK": "RED_SPARK.jpg",
+    "RED AND BLACK NOTES": "",
     "RENTERS & HOUSING UNION": "RENTERS_&_HOUSING_UNION.jpg",
     "SEARCH FOUNDATION": "SEARCH_FOUNDATION.jpg",
     "SOCIALISM TODAY": "",

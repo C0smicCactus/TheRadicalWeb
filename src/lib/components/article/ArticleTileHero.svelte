@@ -1,5 +1,5 @@
 <script>
-  import { appUtils } from '$lib/utils/appUtils.js';
+  import { helpers } from '$lib/utils/helpers.js';
   let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
 
   function openLink(e) {
@@ -20,7 +20,7 @@
   
   <div class="flex flex-col justify-center lg:w-[40%] p-6 lg:p-8 gap-4 bg-appSurface w-full">
     <div class="flex items-center gap-2 text-[11px] font-bold text-textSubtle uppercase tracking-wider">
-      <span>{appUtils.formatRelativeDate(article.parsedDate)}</span>
+      <span>{helpers.formatRelativeDate(article.parsedDate)}</span>
       {#if topicsEnabled && article.topics.length > 0}
         <span class="w-1 h-1 rounded-full bg-textSubtle"></span>
         <span style="color: {primaryColor};">{article.topics[0]}</span>

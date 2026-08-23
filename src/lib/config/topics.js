@@ -1,4 +1,10 @@
-export const appTopics = [
+/**
+ * @file topics.js
+ * @description Topic/tag classification configuration defining keyword-weighted categories
+ * for automatic article tagging (e.g., ECONOMY, ENVIRONMENT, LABOUR, PRAXIS, etc.).
+ */
+
+export const topics = [
   {
     name: "ECONOMY",
     threshold: 2.0,
@@ -196,7 +202,7 @@ export const appTopics = [
   {
     name: "MUTUAL AID",
     threshold: 2.0,
-    exclusions: ["sport", "recreation"],
+    exclusions: ["sport", "recreation", "funeral", "memorial"],
     keywords: [
       { keyword: "mutual aid", weight: 3.0 },
       { keyword: "solidarity", weight: 2.0 },

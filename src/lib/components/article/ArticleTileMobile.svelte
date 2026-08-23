@@ -1,5 +1,5 @@
 <script>
-  import { appUtils } from '$lib/utils/appUtils.js';
+  import { helpers } from '$lib/utils/helpers.js';
   import { useSwipeGesture } from '$lib/composables/useSwipeGesture.svelte.js';
 
   let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
@@ -85,7 +85,7 @@
   </div>
 
   <div class="px-1 py-1.5 flex flex-col mt-1">
-    <div class="text-[8px] text-textSubtle font-bold uppercase tracking-wider">{appUtils.formatRelativeDate(article.parsedDate)}</div>
+    <div class="text-[8px] text-textSubtle font-bold uppercase tracking-wider">{helpers.formatRelativeDate(article.parsedDate)}</div>
     <div class="mt-0.5 text-[13px] leading-[1.45em] max-h-[2.9em] text-textMain overflow-hidden relative">
       <span class="font-black text-[11px] mr-2 uppercase" style="color: {primaryColor};">{article.source}</span>
       {article.description}

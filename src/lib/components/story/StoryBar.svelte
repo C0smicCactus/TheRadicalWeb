@@ -1,6 +1,6 @@
 <script>
   import { base } from '$app/paths';
-  import { appFeeds } from '$lib/config/appFeeds.js';
+  import { feeds } from '$lib/config/feeds.js';
   import StoryViewer from '$lib/components/story/StoryViewer.svelte';
 
   let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
@@ -92,10 +92,10 @@
                 {entry.source.substring(0, entry.source.length > 2 ? 2 : 1)}
               </span>
 
-              <!-- Actual Logo Image (Only rendered if mapped in appFeeds.js) -->
-              {#if appFeeds.publisherLogos[entry.source]}
+              <!-- Actual Logo Image (Only rendered if mapped in feeds.js) -->
+              {#if feeds.publisherLogos[entry.source]}
                 <img
-                  src="{base || ''}/logos/{appFeeds.publisherLogos[entry.source]}"
+                  src="{base || ''}/logos/{feeds.publisherLogos[entry.source]}"
                   alt="{entry.source}"
                   class="relative w-full h-full object-cover object-center z-10 bg-appSurface"
                   onerror={(e) => { e.currentTarget.style.display = 'none'; }}

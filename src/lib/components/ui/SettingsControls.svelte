@@ -1,6 +1,6 @@
 <script>
-  import { appTopics } from '$lib/config/appTopics.js';
-  import { appColors } from '$lib/config/appColors.js';
+  import { topics } from '$lib/config/topics.js';
+  import { colors } from '$lib/config/colors.js';
   import ToggleSwitch from './ToggleSwitch.svelte';
   import ActionLink from './ActionLink.svelte';
 
@@ -12,7 +12,7 @@
     onCustomColor 
   } = $props();
 
-  const filterOptions = ["ALL", ...appTopics.map(t => t.name)];
+  const filterOptions = ["ALL", ...topics.map(t => t.name)];
   
   let showResetConfirm = $state(false);
 </script>
@@ -43,7 +43,7 @@
   <div>
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-3 uppercase">THEME PALETTE</div>
     <div class="flex flex-wrap gap-2.5">
-      {#each appColors.themeChoices as color}
+      {#each colors.themeChoices as color}
         <button onclick={() => fm.updateTheme(color)} class="w-[35px] h-[35px] border-2 cursor-pointer transition-transform hover:scale-105 rounded" style="background-color: {color}; border-color: {fm.primaryColor === color ? 'var(--text-main)' : 'transparent'};" aria-label="Select theme"></button>
       {/each}
       <button onclick={onCustomColor} class="w-[35px] h-[35px] border-2 border-borderSubtle cursor-pointer flex items-center justify-center transition-transform hover:scale-105 rounded shadow" style="background: linear-gradient(135deg, #FF5757, #57FFFF, #57FF57, #FF57FF, #FF5757);">

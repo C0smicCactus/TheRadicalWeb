@@ -1,4 +1,16 @@
-export const appUtils = {
+/**
+ * @file helpers.js
+ * @description General-purpose utility functions for date formatting and function debouncing.
+ */
+
+export const helpers = {
+  /**
+   * Formats a date input into a human-readable relative time string (e.g., "2 HOURS AGO")
+   * or a formatted date string (DD/MM/YYYY) for older entries.
+   *
+   * @param {string|Date} dateInput - The date to format.
+   * @returns {string} The formatted relative time or date string.
+   */
   formatRelativeDate(dateInput) {
     const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
     if (isNaN(date.getTime())) return "";
@@ -33,9 +45,9 @@ export const appUtils = {
    * Invokes the function immediately on the first call, then queues subsequent calls.
    * The debounced function has a `flush()` method to force immediate execution.
    *
-   * @param {Function} fn - The function to debounce
-   * @param {number} wait - Wait time in milliseconds (default: 1000)
-   * @returns {Function} Debounced function with `flush()` method
+   * @param {Function} fn - The function to debounce.
+   * @param {number} wait - Wait time in milliseconds (default: 1000).
+   * @returns {Function} Debounced function with `flush()` and `cancel()` methods.
    */
   debounce(fn, wait = 1000) {
     let timeoutId;

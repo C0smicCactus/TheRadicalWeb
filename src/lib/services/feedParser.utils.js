@@ -1,9 +1,9 @@
-// =============================================================================
-// Feed Parser Utilities
-// Shared helpers for feed parsing: date parsing, HTML cleaning, host resolution
-// =============================================================================
+/**
+ * @file feedParser.utils.js
+ * @description Shared helpers for feed parsing: date parsing, HTML cleaning, and host resolution.
+ */
 
-import { appFeeds } from '$lib/config/appFeeds.js';
+import { feeds } from '$lib/config/feeds.js';
 
 // Cache registered hosts once
 let _registeredHosts = null;
@@ -11,9 +11,9 @@ let _registeredHosts = null;
 export function getRegisteredHosts() {
   if (_registeredHosts) return _registeredHosts;
   const allFeedUrls = [
-    ...Object.keys(appFeeds.coreSources),
-    ...Object.keys(appFeeds.globalSources),
-    ...Object.keys(appFeeds.extendedSources)
+    ...Object.keys(feeds.coreSources),
+    ...Object.keys(feeds.globalSources),
+    ...Object.keys(feeds.extendedSources)
   ];
   _registeredHosts = allFeedUrls.map(url => {
     try { return new URL(url).hostname.replace(/^www\./, ''); } catch(e) { return ''; }
@@ -21,6 +21,13 @@ export function getRegisteredHosts() {
   return _registeredHosts;
 }
 
+/**
+ * Parses an RFC 822 or ISO 8601 date string into a JavaScript Date object.
+ * Falls back to the current date if parsing fails.
+ *
+ * @param {string} s - The date string to parse.
+ * @returns {Date} The parsed Date object, or the current date on failure.
+ */
 export function parseDate(s) {
   if (!s) return new Date();
   const parsed = new Date(s);
@@ -34,6 +41,13 @@ export function parseDate(s) {
   }
 }
 
+/**
+ * Cleans HTML content by removing tags, decoding entities, and normalizing whitespace.
+ * Handles multiple levels of entity encoding (e.g., &amp; -> &).
+ *
+ * @param {string} input - The raw HTML string to clean.
+ * @returns {string} The cleaned plain text content.
+ */
 export function cleanHtml(input) {
   if (!input) return "";
 

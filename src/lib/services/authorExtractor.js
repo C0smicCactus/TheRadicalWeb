@@ -1,10 +1,19 @@
-// =============================================================================
-// Author Extractor
-// Extracts and formats author names from RSS/Atom feed items
-// =============================================================================
+/**
+ * @file authorExtractor.js
+ * @description Extracts and formats author names from RSS/Atom feed items with fallback text parsing.
+ */
 
 import { cleanHtml } from './feedParser.utils.js';
 
+/**
+ * Extracts an author name from an RSS/Atom feed element, with fallback regex parsing from article content.
+ *
+ * @param {string} authorTag - The raw author element content from the feed.
+ * @param {string} title - The article headline for fallback matching.
+ * @param {string} content - The full article HTML content for fallback matching.
+ * @param {string} sourceName - The name of the source publication for exclusion filtering.
+ * @returns {string} The cleaned author name, or empty string if none found.
+ */
 export function extractAuthor(authorTag, title, content, sourceName) {
   let author = cleanHtml(authorTag || '').trim();
 

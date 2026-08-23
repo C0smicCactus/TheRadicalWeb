@@ -1,8 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import { FeedManager } from '$lib/state/feedManager.svelte.js';
-  import { appColors } from '$lib/config/appColors.js';
-  import { appTopics } from '$lib/config/appTopics.js';
 
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import DashboardDrawer from '$lib/components/dashboard/DashboardDrawer.svelte';
@@ -42,8 +40,6 @@
 
   <DashboardContentView
     {fm}
-    appTopics={appTopics}
-    themeChoices={appColors.themeChoices}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}
     onShowAbout={() => { drawerOpen = false; aboutDialogOpen = true; }}
     onShowGitHub={() => { window.open('https://github.com/C0smicCactus/TheRadicalWeb', '_blank', 'noopener,noreferrer'); }}

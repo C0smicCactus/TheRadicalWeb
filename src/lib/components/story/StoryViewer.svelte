@@ -1,6 +1,6 @@
 <script>
   import { untrack } from 'svelte';
-  import { appUtils } from '$lib/utils/appUtils.js';
+  import { helpers } from '$lib/utils/helpers.js';
   import { feedParser } from '$lib/services/feedParser.js';
   import { useSwipeGesture } from '$lib/composables/useSwipeGesture.svelte.js';
 
@@ -167,7 +167,7 @@
       <div class="ml-3 flex flex-col">
         <span class="font-bold text-sm text-white">{sourceName}</span>
         <span class="text-white/60 text-[10px] font-bold uppercase">
-          {articles[currentIndex] ? appUtils.formatRelativeDate(articles[currentIndex].parsedDate) : ''}
+          {articles[currentIndex] ? helpers.formatRelativeDate(articles[currentIndex].parsedDate) : ''}
         </span>
       </div>
       <div class="flex-1"></div>

@@ -1,15 +1,15 @@
 <script>
-  import { appFeeds } from '$lib/config/appFeeds.js';
+  import { feeds } from '$lib/config/feeds.js';
   import ToggleSwitch from '../ui/ToggleSwitch.svelte';
 
   let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();
 
   let allNames = $derived.by(() => {
     const list = [
-      ...Object.values(appFeeds.coreSources),
-      ...Object.values(appFeeds.globalSources)
+      ...Object.values(feeds.coreSources),
+      ...Object.values(feeds.globalSources)
     ];
-    if (extendedMode) list.push(...Object.values(appFeeds.extendedSources));
+    if (extendedMode) list.push(...Object.values(feeds.extendedSources));
     return [...new Set(list)].sort();
   });
 

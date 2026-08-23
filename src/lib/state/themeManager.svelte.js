@@ -1,7 +1,7 @@
-import { appColors } from '$lib/config/appColors.js';
+import { colors } from '$lib/config/colors.js';
 
 export class ThemeManager {
-  primaryColor = $state(appColors.themeChoices[0]);
+  primaryColor = $state(colors.themeChoices[0]);
   isDark = $state(true);
 
   init() {

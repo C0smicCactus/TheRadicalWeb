@@ -1,17 +1,20 @@
 /**
- * megaFetcher.js
- * 
- * Centralised server-side feed aggregation engine.
+ * @file feedAggregator.js
+ * @description Centralised server-side RSS feed aggregation engine.
  * Fetches, parses, and normalises all RSS feeds on the backend (e.g. during hourly Github Actions)
- * to bypass client-side browser CORS restrictions and massively reduce the payload size.
+ * to bypass client-side browser CORS restrictions and massively reduce the payload.
  */
 
-import { appFeeds } from '$lib/config/appFeeds.js';
+import { feeds } from '$lib/config/feeds.js';
 import { feedParser } from '$lib/services/feedParser.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
 
 let megaFeedPromise = null;
 
+/**
+ * Returns the aggregated feed, building it lazily on first call.
+ * @returns {Promise<Array>} Promise resolving to an array of Article objects.
+ */
 export function getMegaFeed() {
   if (!megaFeedPromise) {
     megaFeedPromise = buildFeed();
@@ -21,7 +24,7 @@ export function getMegaFeed() {
 
 async function buildFeed() {
   // Override network config to bypass CORS proxies since this runs on a Node server
-  networkConfig.wrapCorsProxy = (url) => url; 
+  networkConfig.wrapCorsProxy = (url) => url;
 
   const imageCache = new Map();
   try {
@@ -37,7 +40,7 @@ async function buildFeed() {
     // Ignore if the live site is unreachable or file doesn't exist yet
   }
 
-  const sources = { ...appFeeds.coreSources, ...appFeeds.globalSources, ...appFeeds.extendedSources };
+  const sources = { ...feeds.coreSources, ...feeds.globalSources, ...feeds.extendedSources };
   const allArticles = [];
 
   // Fetch all feeds simultaneously with an automatic proxy fallback
@@ -93,7 +96,7 @@ async function buildFeed() {
       }
     }
   });
-  
+
   await Promise.all(scrapePromises);
   return finalArticles;
 }

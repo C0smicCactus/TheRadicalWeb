@@ -1,7 +1,7 @@
 import { base } from '$app/paths';
-import { appFeeds } from '$lib/config/appFeeds.js';
+import { feeds } from '$lib/config/feeds.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
-import { appUtils } from '$lib/utils/appUtils.js';
+import { helpers } from '$lib/utils/helpers.js';
 import { Article } from '$lib/models/Article.js';
 import { ThemeManager } from './themeManager.svelte.js';
 import { SettingsManager } from './settingsManager.svelte.js';
@@ -61,14 +61,14 @@ export class FeedManager {
   /**
    * Persists viewed stories to local storage with a debounce to prevent spamming browser I/O.
    */
-  debouncedPersist = appUtils.debounce((data) => {
+  debouncedPersist = helpers.debounce((data) => {
     localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(data));
   }, 1500);
 
   /**
    * Persists the current article feed to offline cache.
    */
-  debouncedSaveCache = appUtils.debounce((data) => {
+  debouncedSaveCache = helpers.debounce((data) => {
     try {
       localStorage.setItem(networkConfig.offlineCacheKey, JSON.stringify(data));
     } catch (_) {}
@@ -214,7 +214,7 @@ export class FeedManager {
       filtered = filtered.filter(a => a.topics.includes(this.activeFilter));
     }
     if (!this.extendedMode) {
-      const extendedNames = new Set(Object.values(appFeeds.extendedSources));
+      const extendedNames = new Set(Object.values(feeds.extendedSources));
       filtered = filtered.filter(a => !extendedNames.has(a.source));
     }
     if (!this.allSourcesEnabled) {

@@ -1,4 +1,4 @@
-import { appFeeds } from '$lib/config/appFeeds.js';
+import { feeds } from '$lib/config/feeds.js';
 
 export class SettingsManager {
   extendedMode = $state(false);
@@ -15,10 +15,10 @@ export class SettingsManager {
     if (savedSources) {
       this.enabledSources = new Set(JSON.parse(savedSources));
     } else {
-      this.enabledSources = new Set([
-        ...Object.values(appFeeds.coreSources),
-        ...Object.values(appFeeds.globalSources)
-      ]);
+        this.enabledSources = new Set([
+          ...Object.values(feeds.coreSources),
+          ...Object.values(feeds.globalSources)
+        ]);
     }
   }
 

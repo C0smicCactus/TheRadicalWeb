@@ -1,10 +1,11 @@
-// =============================================================================
-// Feed Parser
-// Main orchestrator for parsing RSS/Atom feed XML into Article objects
-// =============================================================================
+/**
+ * @file feedParser.js
+ * @description Main orchestrator for parsing RSS/Atom feed XML into Article objects.
+ * Supports both DOMParser (browser) and Regex fallback (Node.js/server) parsing strategies.
+ */
 
 import { Article } from '$lib/models/Article.js';
-import { appFeeds } from '$lib/config/appFeeds.js';
+import { feeds } from '$lib/config/feeds.js';
 import { networkConfig } from '$lib/config/networkConfig.js';
 import { feedFilterRules } from '$lib/utils/feedFilterRules.js';
 import { getRegisteredHosts, parseDate, cleanHtml } from './feedParser.utils.js';
@@ -13,10 +14,32 @@ import { extractAuthor } from './authorExtractor.js';
 import { scrapeUrlForImage, scrapeImage, clearImageScrapeCache } from './imageScraper.js';
 import { feedOverrides } from './feedOverrides.js';
 
-// =============================================================================
-// Private helper: Assembles extracted strings into a clean Article instance
-// =============================================================================
-function processExtractedItem(titleStr, linkStr, sourceName, feedUrl, registeredHosts, maxArticles, results, title, link, pubDateStr, summaryStr, descStr, contentEncodedStr, authorTagContent) {
+/**
+ * Processes extracted feed item data into a clean Article instance.
+ * Handles URL resolution, source-specific overrides, tag calculation, and filtering.
+ *
+ * @param {object} payload - The extraction payload containing all item fields.
+ * @param {string} payload.titleStr - The raw title string.
+ * @param {string} payload.linkStr - The raw link/URL string.
+ * @param {string} payload.sourceName - The name of the feed source.
+ * @param {string} payload.feedUrl - The base URL of the feed for relative URL resolution.
+ * @param {object} payload.registeredHosts - Map of known hosts for deduplication.
+ * @param {number} payload.maxArticles - Maximum number of articles to collect.
+ * @param {Array} payload.results - The results array to push articles into.
+ * @param {string} payload.pubDateStr - The publication date string.
+ * @param {string} payload.summaryStr - The summary/description text.
+ * @param {string} payload.descStr - The description tag text.
+ * @param {string} payload.contentEncodedStr - The encoded content text.
+ * @param {string} payload.authorTagContent - The author tag text content.
+ */
+function processExtractedItem({ 
+  titleStr, linkStr, sourceName, feedUrl, registeredHosts, 
+  maxArticles, results, pubDateStr, summaryStr, descStr, 
+  contentEncodedStr, authorTagContent 
+}) {
+  let title = cleanHtml(titleStr || 'Untitled');
+  let link = (linkStr || '').trim();
+
   // Convert relative URLs to absolute URLs using the feed URL as the base
   if (link && !link.match(/^https?:\/\//i) && feedUrl) {
     try {
@@ -26,8 +49,8 @@ function processExtractedItem(titleStr, linkStr, sourceName, feedUrl, registered
     }
   }
 
-  if (Object.values(appFeeds.globalSources).includes(sourceName)) {
-    const isRelevant = appFeeds.auKeywords.some(k => {
+  if (Object.values(feeds.globalSources).includes(sourceName)) {
+    const isRelevant = feeds.auKeywords.some(k => {
       const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
       return pattern.test(title.toLowerCase());
     });
@@ -121,7 +144,16 @@ export const feedParser = {
               const author = item.getElementsByTagNameNS("*", "creator")[0]?.textContent ||
                              item.querySelector("author > name, contributor > name, author")?.textContent;
 
-              processExtractedItem(title, link, sourceName, feedUrl, registeredHosts, maxArticles, results, title, link, pubDate, summary, desc, content, author);
+              processExtractedItem({
+                titleStr: title, 
+                linkStr: link, 
+                sourceName, feedUrl, registeredHosts, maxArticles, results, 
+                pubDateStr: pubDate, 
+                summaryStr: summary, 
+                descStr: desc, 
+                contentEncodedStr: content, 
+                authorTagContent: author
+              });
               if (maxArticles !== null && results.length >= maxArticles) break;
             }
           }
@@ -131,7 +163,7 @@ export const feedParser = {
       }
     }
 
-    // 2. FALLBACK TO YOUR REGEX SYSTEM (If DOMParser fails or returns 0 tags)
+    // 2. FALLBACK TO REGEX SYSTEM (If DOMParser fails or returns 0 tags)
     if (!domParsed) {
       const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
       const atomRegex = /<entry[\s>]([\s\S]*?)<\/entry>/gi;
@@ -169,22 +201,16 @@ export const feedParser = {
           }
         }
 
-        processExtractedItem(
-          titleMatch ? titleMatch[1] : undefined,
-          linkMatch ? linkMatch[1] : undefined,
-          sourceName,
-          feedUrl,
-          registeredHosts,
-          maxArticles,
-          results,
-          titleMatch ? titleMatch[1] : undefined,
-          linkMatch ? linkMatch[1] : undefined,
-          pubDateMatch ? pubDateMatch[1] : undefined,
-          summaryMatch ? summaryMatch[1] : undefined,
-          descTagMatch ? descTagMatch[1] : undefined,
-          contentEncodedMatch ? contentEncodedMatch[1] : undefined,
-          authorTagContent
-        );
+        processExtractedItem({
+          titleStr: titleMatch ? titleMatch[1] : undefined,
+          linkStr: linkMatch ? linkMatch[1] : undefined,
+          pubDateStr: pubDateMatch ? pubDateMatch[1] : undefined,
+          summaryStr: summaryMatch ? summaryMatch[1] : undefined,
+          descStr: descTagMatch ? descTagMatch[1] : undefined,
+          contentEncodedStr: contentEncodedMatch ? contentEncodedMatch[1] : undefined,
+          authorTagContent,
+          sourceName, feedUrl, registeredHosts, maxArticles, results
+        });
 
         if (maxArticles !== null && results.length >= maxArticles) break;
       }

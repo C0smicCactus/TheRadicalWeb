@@ -14,7 +14,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=for-the-badge">
   <img src="https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge&color=ff7070">
-  <img src="https://img.shields.io/badge/Feeds-39-green?style=for-the-badge&color=4ac6b7">
+  <img src="https://img.shields.io/badge/Feeds-44-green?style=for-the-badge&color=4ac6b7">
   <img src="https://img.shields.io/github/repo-size/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=ff7070">
   <img src="https://img.shields.io/github/stars/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=965f8a">
   <img src="https://img.shields.io/github/license/C0smicCactus/TheRadicalWeb?style=for-the-badge&color=4ac6b7">
@@ -54,46 +54,50 @@ The Radical was born out of a need to centralise news from leftist and independe
 
 ## 📊 Feed Sources
 
-The Radical aggregates from **39 independent news sources**, organised into three categories:
+The Radical aggregates from **43 independent news sources**, organised into three categories:
 
 <table>
 <tr>
 <td valign="top" width="60%">
 
-### Core Sources (32)
+### Core Sources (36)
 
-- Picket Line
+- 3CR
+- Arena
+- Black Peoples Union
+- Co-Op News
+- Digital Rights Watch
+- Disputes Report
+- Electronic Frontiers Australia
+- Electronic Frontier Foundation
+- Eureka Initiative
+- Freedom
 - Green Left
+- IWW (South East Queensland)
+- IndigenousX
+- Koori Mail
+- Labor Tribune
+- LabourStart
+- Militant Worker
+- OpenAustralia Foundation
+- Overland
+- Partisan!
+- Picket Line
+- Red and Black Notes
+- Red Ant
 - Red Flag
 - Red Spark
+- Renters & Housing Union
+- Search Foundation
 - Socialism Today
 - Solidarity
-- Labor Tribune
-- World Socialist Web Site
-- The Anvil
-- Vanguard
-- Partisan!
-- Red Ant
-- Temokalati
-- Co-Op News
-- IWW (South East Queensland)
-- Freedom
-- Disputes Report
-- Overland
 - Spirit of Eureka
-- Black Peoples Union
-- IndigenousX
-- Red and Black Notes
-- The Guardian (CPA)
-- Arena
+- Temokalati
+- The Anvil
 - The Communist
-- Militant Worker
-- Koori Mail
-- 3CR
-- Eureka Initiative
-- LabourStart
-- OpenAustralia Foundation
-- Search Foundation
+- The Guardian (CPA)
+- Vanguard
+- World Socialist Web Site
 
 </td>
 <td valign="top" width="40%">
@@ -123,7 +127,7 @@ The Radical aggregates from **39 independent news sources**, organised into thre
 > All the RSS feeds used in this project can be found
 > [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/appFeeds.js).
 
-> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 39 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
+> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 44 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
 > 
 > `https://c0smiccactus.github.io/TheRadicalWeb/radical-feed.xml`
 

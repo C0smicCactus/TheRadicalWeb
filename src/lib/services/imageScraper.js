@@ -1,7 +1,7 @@
-// =============================================================================
-// Image Scraper
-// Scrapes and caches images from web pages for feed articles
-// =============================================================================
+/**
+ * @file imageScraper.js
+ * @description Scrapes OpenGraph images from external web pages with shared deduplication caching.
+ */
 
 import { networkConfig } from '$lib/config/networkConfig.js';
 
