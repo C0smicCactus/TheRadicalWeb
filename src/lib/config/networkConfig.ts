@@ -10,7 +10,8 @@ export const networkConfig = {
   imageProxyParams: '&w=1200&fit=cover&output=webp',
   useCorsProxies: true,
 
-  feedFetchTimeoutMs: 5000,
+  // Give up on a feed (or the proxy fallback) after this long, so one stuck site can't stall the build
+  feedFetchTimeoutMs: 20000,
   imageScrapeTimeoutMs: 4000,
 
   maxFeedFetchRetries: 2,

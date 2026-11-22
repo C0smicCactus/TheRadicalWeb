@@ -32,7 +32,9 @@ async function buildFeed(): Promise<Article[]> {
   const previousDates = new Map<string, string>();
   try {
     // Check the live production site to remember images scraped and dates seen in previous builds
-    const liveRes = await fetch('https://c0smiccactus.github.io/TheRadicalWeb/radical-data.json');
+    const liveRes = await fetch('https://c0smiccactus.github.io/TheRadicalWeb/radical-data.json', {
+      signal: AbortSignal.timeout(networkConfig.feedFetchTimeoutMs)
+    });
     if (liveRes.ok) {
       const oldData: Partial<ArticleMap>[] = await liveRes.json();
       for (const a of oldData) {
@@ -54,7 +56,10 @@ async function buildFeed(): Promise<Article[]> {
 
     // Attempt 1: Direct Fetch (Often fails on sites with strict bot protection like Substack)
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: AbortSignal.timeout(networkConfig.feedFetchTimeoutMs)
+      });
       if (res.ok) {
         text = await res.text();
         success = true;
@@ -65,7 +70,10 @@ async function buildFeed(): Promise<Article[]> {
     if (!success) {
       try {
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-        const res = await fetch(proxyUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        const res = await fetch(proxyUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+          signal: AbortSignal.timeout(networkConfig.feedFetchTimeoutMs)
+        });
         if (res.ok) {
           text = await res.text();
           success = true;
