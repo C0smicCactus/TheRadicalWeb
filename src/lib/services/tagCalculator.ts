@@ -6,6 +6,27 @@
 import { topics } from '#lib/config/topics.js';
 
 /**
+ * Matches a keyword only as a whole word or phrase, so "ai" doesn't match "against"
+ * and the exclusion "sport" doesn't match "transport".
+ */
+function wholeWord(word: string): RegExp {
+  const escaped = word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escaped}\\b`);
+}
+
+// Build the patterns once, rather than for every article.
+const compiledTopics = topics.map((topic) => ({
+  name: topic.name,
+  threshold: topic.threshold,
+  keywords: topic.keywords.map((kw) => ({
+    pattern: wholeWord(kw.keyword),
+    weight: kw.weight,
+    isMultiWord: kw.keyword.includes(' ')
+  })),
+  exclusions: topic.exclusions.map(wholeWord)
+}));
+
+/**
  * Calculates and assigns relevant topic tags to an article based on keyword scoring.
  *
  * @param title - The article headline.
@@ -18,23 +39,20 @@ export function calculateTags(title: string, descText: string | null | undefined
   const textLower = `${title} ${descText} ${fullContent}`.toLowerCase();
   const titleLower = title.toLowerCase();
 
-  for (const topic of topics) {
+  for (const topic of compiledTopics) {
     let score = 0.0;
     for (const kw of topic.keywords) {
-      const kwLower = kw.keyword.toLowerCase();
-      const isMultiWord = kwLower.includes(' ');
-
-      if (titleLower.includes(kwLower)) {
+      if (kw.pattern.test(titleLower)) {
         score += kw.weight * 3.0;
-        if (isMultiWord) score += 1.0;
+        if (kw.isMultiWord) score += 1.0;
       }
-      if (textLower.includes(kwLower)) {
+      if (kw.pattern.test(textLower)) {
         score += kw.weight * 1.0;
-        if (isMultiWord) score += 0.5;
+        if (kw.isMultiWord) score += 0.5;
       }
     }
 
-    const hasExclusion = topic.exclusions.some(excl => textLower.includes(excl.toLowerCase()));
+    const hasExclusion = topic.exclusions.some((pattern) => pattern.test(textLower));
     if (score >= topic.threshold && !hasExclusion) {
       tags.push(topic.name);
     }
