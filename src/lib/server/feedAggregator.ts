@@ -28,13 +28,16 @@ async function buildFeed(): Promise<Article[]> {
   networkConfig.wrapCorsProxy = (url: string) => url;
 
   const imageCache = new Map<string, string>();
+  /** Article link -> date it had in the previous build (used to tame future dates) */
+  const previousDates = new Map<string, string>();
   try {
-    // Check the live production site to remember images scraped in previous hourly builds
+    // Check the live production site to remember images scraped and dates seen in previous builds
     const liveRes = await fetch('https://c0smiccactus.github.io/TheRadicalWeb/radical-data.json');
     if (liveRes.ok) {
       const oldData: Partial<ArticleMap>[] = await liveRes.json();
       for (const a of oldData) {
         if (a.link && a.thumbnail) imageCache.set(a.link, a.thumbnail);
+        if (a.link && a.parsedDate) previousDates.set(a.link, a.parsedDate);
       }
     }
   } catch(e) {
@@ -81,10 +84,25 @@ async function buildFeed(): Promise<Article[]> {
 
   await Promise.all(fetchPromises);
 
-  // Deduplicate articles by link and sort by date descending
-  const deduplicated = new Map();
+  // Deduplicate articles by link
+  const deduplicated = new Map<string, Article>();
   for (const a of allArticles) deduplicated.set(a.link.toLowerCase(), a);
-  let finalArticles = Array.from(deduplicated.values()).sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
+  const uniqueArticles = Array.from(deduplicated.values());
+
+  // Some feeds give dates in the future (for example an event date), which would pin an article to the top.
+  // Treat a future date as the time the article was first seen: keep the date from the previous build if it
+  // had one, otherwise use now. Later builds then reuse that date, so the article ages normally.
+  const now = new Date();
+  for (const article of uniqueArticles) {
+    if (article.parsedDate.getTime() > now.getTime()) {
+      const previous = previousDates.get(article.link);
+      const previousDate = previous ? new Date(previous) : null;
+      article.parsedDate = previousDate && previousDate.getTime() <= now.getTime() ? previousDate : now;
+    }
+  }
+
+  // Newest first
+  const finalArticles = uniqueArticles.sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
 
   // Resolve missing thumbnails using the memory cache, or scrape them directly
   const scrapePromises = finalArticles.map(async (article) => {
