@@ -2,7 +2,7 @@
   import { helpers } from '#lib/utils/helpers.js';
   import type { ArticleTileVariantProps } from './types.js';
 
-  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction }: ArticleTileVariantProps = $props();
+  let { article, primaryColor, onArticleOpen, topicsEnabled }: ArticleTileVariantProps = $props();
 
   function openLink(e?: Event) {
     if (e) e.stopPropagation();
@@ -10,10 +10,10 @@
   }
 </script>
 
-<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
+<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink}>
   <div class="relative w-full lg:w-[60%] aspect-video bg-tileBackground overflow-hidden border-r border-borderSubtle">
-    {#if finalThumbnail || article.thumbnail}
-      <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+    {#if article.thumbnail}
+      <img src={article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
     {/if}
     <div class="absolute top-4 left-4 px-3 py-1.5 text-white drop-shadow-xs text-[10px] font-black tracking-widest uppercase rounded-sm shadow-xs z-10" style="background-color: {primaryColor};">
       {article.source}

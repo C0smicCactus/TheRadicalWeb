@@ -2,7 +2,7 @@
   import { helpers } from '#lib/utils/helpers.js';
   import type { ArticleTileVariantProps } from './types.js';
 
-  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction }: ArticleTileVariantProps = $props();
+  let { article, primaryColor, onArticleOpen, topicsEnabled }: ArticleTileVariantProps = $props();
 
   function openLink(e?: Event) {
     if (e) e.stopPropagation();
@@ -10,10 +10,10 @@
   }
 </script>
 
-<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col gap-3 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden hover:shadow-lg transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 m-0 p-0" onclick={openLink} use:lazyLoadAction>
+<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col gap-3 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden hover:shadow-lg transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 m-0 p-0" onclick={openLink}>
   <div class="relative w-full aspect-[16/9] bg-tileBackground overflow-hidden">
-    {#if finalThumbnail || article.thumbnail}
-      <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+    {#if article.thumbnail}
+      <img src={article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
     {/if}
     <div class="absolute inset-0 bg-black/10 transition-colors group-hover:bg-transparent z-0"></div>
     <div class="absolute top-3 left-3 px-2.5 py-1 text-white drop-shadow-xs text-[9px] font-black tracking-widest uppercase rounded-sm shadow-xs z-10" style="background-color: {primaryColor};">

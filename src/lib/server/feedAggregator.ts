@@ -24,9 +24,6 @@ export function getMegaFeed(): Promise<Article[]> {
 }
 
 async function buildFeed(): Promise<Article[]> {
-  // Override network config to bypass CORS proxies since this runs on a Node server
-  networkConfig.wrapCorsProxy = (url: string) => url;
-
   const imageCache = new Map<string, string>();
   /** Article link -> date it had in the previous build (used to tame future dates) */
   const previousDates = new Map<string, string>();

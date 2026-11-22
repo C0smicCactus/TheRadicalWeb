@@ -1,7 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { helpers } from '#lib/utils/helpers.js';
-  import { feedParser } from '#lib/services/feedParser.js';
   import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
   import type { Article } from '#lib/models/Article.js';
 
@@ -19,8 +18,6 @@
 
   /* svelte-ignore state_referenced_locally */
   let currentIndex = $state(initialIndex);
-  /** Story index -> image scraped from the article page */
-  let resolvedThumbnails = $state<Record<number, string>>({});
   let progress = $state(0);
   let animationFrame = 0;
   let startTime = 0;
@@ -37,16 +34,6 @@
       }
     }
   });
-
-  function loadThumb(index: number) {
-    const article = articles[index];
-    if (!article || article.thumbnail || resolvedThumbnails[index]) return;
-    feedParser.scrapeUrlForImage(article.link).then(scraped => {
-      if (scraped) {
-        resolvedThumbnails = { ...resolvedThumbnails, [index]: scraped };
-      }
-    });
-  }
 
   function startStoryTimer() {
     if (articles[currentIndex]) {
@@ -87,10 +74,9 @@
 
   // Wrapped execution logic in `untrack` to prevent unintended loop resets
   $effect(() => {
-    const activeIndex = currentIndex;
-    
+    void currentIndex; // re-run whenever the story changes
+
     untrack(() => {
-      loadThumb(activeIndex);
       startStoryTimer();
     });
     
@@ -142,7 +128,7 @@
   <!-- Background Image & Gradient -->
   <div class="absolute inset-0 bg-[#131313]">
     {#if articles[currentIndex]}
-      {@const activeImg = resolvedThumbnails[currentIndex] || articles[currentIndex].thumbnail}
+      {@const activeImg = articles[currentIndex].thumbnail}
       {#if activeImg}
         <img
           src={activeImg}

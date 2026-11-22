@@ -19,7 +19,6 @@ export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Prom
 
   const promise = (async () => {
     try {
-      const finalUrl = networkConfig.wrapCorsProxy(url);
       const controller = new AbortController();
       // Use provided signal or create internal one
       const abortSignal = signal || controller.signal;
@@ -30,7 +29,7 @@ export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Prom
         signal.addEventListener('abort', () => controller.abort());
       }
 
-      const res = await fetch(finalUrl, { signal: abortSignal });
+      const res = await fetch(url, { signal: abortSignal });
       clearTimeout(timeoutId);
 
       if (res.ok) {
