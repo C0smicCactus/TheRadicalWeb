@@ -7,6 +7,7 @@
 
 import { feeds } from '#lib/config/feeds.js';
 import { feedParser } from '#lib/services/feedParser.js';
+import { scrapeUrlForImage } from '#lib/services/imageScraper.js';
 import { networkConfig } from '#lib/config/networkConfig.js';
 import type { Article, ArticleMap } from '#lib/models/Article.js';
 
@@ -116,7 +117,7 @@ async function buildFeed(): Promise<Article[]> {
       if (cachedThumbnail !== undefined) {
         article.thumbnail = cachedThumbnail;
       } else {
-        const scraped = await feedParser.scrapeUrlForImage(article.link).catch(() => '');
+        const scraped = await scrapeUrlForImage(article.link).catch(() => '');
         if (scraped) article.thumbnail = networkConfig.wrapImageProxy(scraped);
       }
     }

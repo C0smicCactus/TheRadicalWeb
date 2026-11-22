@@ -11,7 +11,7 @@ import { feedFilterRules } from '#lib/utils/feedFilterRules.js';
 import { getRegisteredHosts, parseDate, cleanHtml } from './feedParser.utils.js';
 import { calculateTags } from './tagCalculator.js';
 import { extractAuthor } from './authorExtractor.js';
-import { scrapeUrlForImage, scrapeImage, clearImageScrapeCache } from './imageScraper.js';
+import { scrapeImage } from './imageScraper.js';
 import { feedOverrides } from './feedOverrides.js';
 
 /**
@@ -231,25 +231,5 @@ export const feedParser = {
     }
 
     return results;
-  },
-
-  async scrapeUrlForImage(url: string, signal?: AbortSignal): Promise<string> {
-    return scrapeUrlForImage(url, signal);
-  },
-
-  clearImageScrapeCache(url?: string): void {
-    clearImageScrapeCache(url);
-  },
-
-  parseDate(s: string): Date {
-    return parseDate(s);
-  },
-
-  cleanHtml(input: string): string {
-    return cleanHtml(input);
-  },
-
-  scrapeImage(html: string): string {
-    return scrapeImage(html);
   }
 };

@@ -5,10 +5,11 @@
 
 import { networkConfig } from '#lib/config/networkConfig.js';
 
-// Shared image scraping cache to deduplicate requests across all components
+// Cache so each article page is only fetched once per build
 const imageScrapeCache = new Map<string, Promise<string>>();
 
-export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Promise<string> {
+/** Fetches an article page and returns its og:image URL, or '' if there isn't one. Used by the build. */
+export async function scrapeUrlForImage(url: string): Promise<string> {
   if (!url) return "";
 
   // Deduplication: return existing promise if already scraping this URL
@@ -19,18 +20,8 @@ export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Prom
 
   const promise = (async () => {
     try {
-      const controller = new AbortController();
-      // Use provided signal or create internal one
-      const abortSignal = signal || controller.signal;
-      const timeoutId = setTimeout(() => controller.abort(), networkConfig.imageScrapeTimeoutMs);
-
-      // Listen for external abort (e.g., component unmount)
-      if (signal) {
-        signal.addEventListener('abort', () => controller.abort());
-      }
-
-      const res = await fetch(url, { signal: abortSignal });
-      clearTimeout(timeoutId);
+      // The time limit covers both the response and reading the page
+      const res = await fetch(url, { signal: AbortSignal.timeout(networkConfig.imageScrapeTimeoutMs) });
 
       if (res.ok) {
         const text = await res.text();
@@ -51,15 +42,6 @@ export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Prom
 
   imageScrapeCache.set(url, promise);
   return promise;
-}
-
-// Clear a URL from the scrape cache (useful for cleanup or manual refresh)
-export function clearImageScrapeCache(url?: string): void {
-  if (url) {
-    imageScrapeCache.delete(url);
-  } else {
-    imageScrapeCache.clear();
-  }
 }
 
 export function scrapeImage(html: string | null | undefined): string {
