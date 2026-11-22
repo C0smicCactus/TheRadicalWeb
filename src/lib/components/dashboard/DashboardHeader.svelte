@@ -51,7 +51,7 @@
 
       <!-- Search Interface -->
       <div class="flex-1 max-w-[600px] mx-auto">
-        <div class="relative flex items-center bg-highlightOverlay rounded-full px-4 py-2 border border-borderSubtle focus-within:border-white/20">
+        <div class="relative flex items-center bg-highlightOverlay rounded-full px-4 py-2 border border-borderSubtle focus-within:border-textSubtle">
           <i class="fa-solid fa-magnifying-glass text-textMuted text-xs mr-3"></i>
           <input
             type="text"

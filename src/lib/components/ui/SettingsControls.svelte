@@ -80,12 +80,12 @@
   <!-- Reset Feed Button -->
   {#if showResetConfirm}
     <div class="bg-appSurface border border-red-500/50 p-4 text-sm rounded-sm shadow-xs">
-      <div class="font-bold text-white mb-2">Reset Feed?</div>
+      <div class="font-bold text-textMain mb-2">Reset Feed?</div>
       <div class="text-xs text-textMuted mb-4 leading-relaxed">
         This will wipe all cached articles and viewed story tracking. A fresh feed update will load immediately.
       </div>
       <div class="flex justify-end space-x-4 mt-2">
-        <button onclick={() => showResetConfirm = false} class="text-textSubtle hover:text-white text-xs font-bold uppercase transition-colors">
+        <button onclick={() => showResetConfirm = false} class="text-textSubtle hover:text-textMain text-xs font-bold uppercase transition-colors">
           Cancel
         </button>
         <button onclick={() => { showResetConfirm = false; fm.resetFeed(); }} class="text-red-500 hover:text-red-400 font-black text-xs uppercase transition-colors">
