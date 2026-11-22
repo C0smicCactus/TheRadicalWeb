@@ -12,22 +12,6 @@
 
   let { width, primaryColor, isDark, onToggleTheme, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings }: Props = $props();
 
-  let mouseDownTime = $state(0);
-
-  function handleLogoMousedown() {
-    mouseDownTime = Date.now();
-  }
-
-  function handleLogoMouseup() {
-    const elapsedTime = Date.now() - mouseDownTime;
-    // Treat as click if mouse was down for less than 300ms
-    if (elapsedTime < 300) {
-      // Only scroll to top on mobile view (when showing "TR" instead of "THE RADICAL")
-      if (width <= 500) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }
 </script>
 
 <header class="flex flex-col w-full z-20">
@@ -42,12 +26,16 @@
   <div class="w-full bg-appBackground border-b border-borderSubtle">
     <div class="max-w-[1754px] mx-auto px-6 py-3 flex items-center justify-between gap-4">
       
-      <!-- Brand Logo -->
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none shrink-0" style="color: {primaryColor};" onmousedown={handleLogoMousedown} onmouseup={handleLogoMouseup}>
+      <!-- Brand Logo: clears search and topic filter, and scrolls back to the top -->
+      <button
+        type="button"
+        class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none shrink-0"
+        style="color: {primaryColor};"
+        onclick={onLogoTap}
+        aria-label="The Radical: show all articles from the top"
+      >
         {width > 500 ? "THE RADICAL" : "TR"}
-      </div>
+      </button>
 
       <!-- Search Interface -->
       <div class="flex-1 max-w-[600px] mx-auto">

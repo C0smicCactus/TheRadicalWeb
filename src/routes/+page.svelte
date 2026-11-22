@@ -10,6 +10,7 @@
   import CustomColorDialog from '#lib/components/dialogs/CustomColorDialog.svelte';
 
   const fm = new FeedManager();
+  let contentView = $state<ReturnType<typeof DashboardContentView>>();
 
   let innerWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1200);
   
@@ -34,11 +35,12 @@
     onToggleTheme={fm.toggleTheme}
     searchQuery={fm.searchQuery}
     onSearchChanged={fm.setSearchQuery}
-    onLogoTap={() => { fm.setActiveFilter("ALL"); fm.setSearchQuery(""); }}
+    onLogoTap={() => { fm.setActiveFilter("ALL"); fm.setSearchQuery(""); contentView?.scrollToTop(); }}
     onOpenSettings={() => drawerOpen = true}
   />
 
   <DashboardContentView
+    bind:this={contentView}
     {fm}
     onShowSources={() => { drawerOpen = false; sourcesDialogOpen = true; }}
     onShowAbout={() => { drawerOpen = false; aboutDialogOpen = true; }}

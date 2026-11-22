@@ -17,6 +17,11 @@
 
   let scrollContainer = $state<HTMLDivElement>();
 
+  /** Scrolls the article list back to the top (the list scrolls inside this box, not the window). */
+  export function scrollToTop() {
+    scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function handleScroll() {
     if (fm.isLoading || fm.isLoadingMore) return;
     if (!scrollContainer) return;
