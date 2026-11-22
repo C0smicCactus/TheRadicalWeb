@@ -28,10 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          # Node 22 rather than 24: with Node 24, some Cloudflare-protected feeds
-          # (Picket Line, Renters & Housing Union) returned nothing from GitHub's servers.
-          # SvelteKit 3 needs Node 22.17 or later. Node 22 support ends 30 Apr 2027.
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
