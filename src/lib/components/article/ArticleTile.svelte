@@ -1,5 +1,5 @@
 <script>
-  import { feedParser } from '$lib/services/feedParser.js';
+  import { feedParser } from '#lib/services/feedParser.js';
   
   import ArticleTileMobile from './ArticleTileMobile.svelte';
   import ArticleTileDesktop from './ArticleTileDesktop.svelte';

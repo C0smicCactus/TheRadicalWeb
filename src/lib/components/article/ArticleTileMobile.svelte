@@ -1,6 +1,6 @@
 <script>
-  import { helpers } from '$lib/utils/helpers.js';
-  import { useSwipeGesture } from '$lib/composables/useSwipeGesture.svelte.js';
+  import { helpers } from '#lib/utils/helpers.js';
+  import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
 
   let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
 

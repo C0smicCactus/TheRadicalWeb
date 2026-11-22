@@ -1,6 +1,6 @@
 <script>
-  import { topics } from '$lib/config/topics.js';
-  import { colors } from '$lib/config/colors.js';
+  import { topics } from '#lib/config/topics.js';
+  import { colors } from '#lib/config/colors.js';
   import ToggleSwitch from './ToggleSwitch.svelte';
   import ActionLink from './ActionLink.svelte';
 

@@ -3,7 +3,7 @@
  * @description Calculates topic tags for articles based on keyword scoring and threshold detection.
  */
 
-import { topics } from '$lib/config/topics.js';
+import { topics } from '#lib/config/topics.js';
 
 /**
  * Calculates and assigns relevant topic tags to an article based on keyword scoring.

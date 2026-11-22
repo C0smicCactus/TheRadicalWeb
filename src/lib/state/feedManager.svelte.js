@@ -1,8 +1,8 @@
-import { base } from '$app/paths';
-import { feeds } from '$lib/config/feeds.js';
-import { networkConfig } from '$lib/config/networkConfig.js';
-import { helpers } from '$lib/utils/helpers.js';
-import { Article } from '$lib/models/Article.js';
+import { resolve } from '$app/paths';
+import { feeds } from '#lib/config/feeds.js';
+import { networkConfig } from '#lib/config/networkConfig.js';
+import { helpers } from '#lib/utils/helpers.js';
+import { Article } from '#lib/models/Article.js';
 import { ThemeManager } from './themeManager.svelte.js';
 import { SettingsManager } from './settingsManager.svelte.js';
 
@@ -157,7 +157,7 @@ export class FeedManager {
     
     try {
       // Fetch the pre-compiled master list. A timestamp query prevents browser caching.
-      const res = await fetch(`${base || ''}/radical-data.json?t=${Date.now()}`); 
+      const res = await fetch(`${resolve('/radical-data.json')}?t=${Date.now()}`); 
       
       if (res.ok) {
         const data = await res.json();

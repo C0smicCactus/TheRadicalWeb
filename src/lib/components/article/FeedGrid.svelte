@@ -1,5 +1,5 @@
 <script>
-  import ArticleTile from '$lib/components/article/ArticleTile.svelte';
+  import ArticleTile from '#lib/components/article/ArticleTile.svelte';
   let { fm } = $props();
 </script>
 

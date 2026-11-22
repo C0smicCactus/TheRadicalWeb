@@ -1,4 +1,4 @@
-import { colors } from '$lib/config/colors.js';
+import { colors } from '#lib/config/colors.js';
 
 export class ThemeManager {
   primaryColor = $state(colors.themeChoices[0]);

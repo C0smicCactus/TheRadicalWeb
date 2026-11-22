@@ -1,5 +1,5 @@
 <script>
-  import SettingsControls from '$lib/components/ui/SettingsControls.svelte';
+  import SettingsControls from '#lib/components/ui/SettingsControls.svelte';
 
   let { fm, onShowSources, onShowAbout, onShowGitHub, onCustomColor, onClose } = $props();
 </script>

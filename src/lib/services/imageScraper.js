@@ -3,7 +3,7 @@
  * @description Scrapes OpenGraph images from external web pages with shared deduplication caching.
  */
 
-import { networkConfig } from '$lib/config/networkConfig.js';
+import { networkConfig } from '#lib/config/networkConfig.js';
 
 // Shared image scraping cache to deduplicate requests across all components
 const imageScrapeCache = new Map();

@@ -1,13 +1,13 @@
 <script>
   import { onMount } from 'svelte';
-  import { FeedManager } from '$lib/state/feedManager.svelte.js';
+  import { FeedManager } from '#lib/state/feedManager.svelte.js';
 
-  import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
-  import DashboardDrawer from '$lib/components/dashboard/DashboardDrawer.svelte';
-  import DashboardContentView from '$lib/components/dashboard/DashboardContentView.svelte';
-  import SourcesDialog from '$lib/components/dialogs/SourcesDialog.svelte';
-  import AboutDialog from '$lib/components/dialogs/AboutDialog.svelte';
-  import CustomColorDialog from '$lib/components/dialogs/CustomColorDialog.svelte';
+  import DashboardHeader from '#lib/components/dashboard/DashboardHeader.svelte';
+  import DashboardDrawer from '#lib/components/dashboard/DashboardDrawer.svelte';
+  import DashboardContentView from '#lib/components/dashboard/DashboardContentView.svelte';
+  import SourcesDialog from '#lib/components/dialogs/SourcesDialog.svelte';
+  import AboutDialog from '#lib/components/dialogs/AboutDialog.svelte';
+  import CustomColorDialog from '#lib/components/dialogs/CustomColorDialog.svelte';
 
   const fm = new FeedManager();
 

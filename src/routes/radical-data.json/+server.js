@@ -1,4 +1,4 @@
-import { getMegaFeed } from '$lib/server/feedAggregator.js';
+import { getMegaFeed } from '#lib/server/feedAggregator.js';
 
 export const prerender = true;
 

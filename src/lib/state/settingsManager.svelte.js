@@ -1,4 +1,4 @@
-import { feeds } from '$lib/config/feeds.js';
+import { feeds } from '#lib/config/feeds.js';
 
 export class SettingsManager {
   extendedMode = $state(false);

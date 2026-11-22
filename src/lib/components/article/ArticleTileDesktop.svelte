@@ -1,5 +1,5 @@
 <script>
-  import { helpers } from '$lib/utils/helpers.js';
+  import { helpers } from '#lib/utils/helpers.js';
   let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
 
   function openLink(e) {

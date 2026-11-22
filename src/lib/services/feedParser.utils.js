@@ -3,7 +3,7 @@
  * @description Shared helpers for feed parsing: date parsing, HTML cleaning, and host resolution.
  */
 
-import { feeds } from '$lib/config/feeds.js';
+import { feeds } from '#lib/config/feeds.js';
 
 // Cache registered hosts once
 let _registeredHosts = null;

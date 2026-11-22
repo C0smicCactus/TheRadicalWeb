@@ -4,10 +4,10 @@
  * Supports both DOMParser (browser) and Regex fallback (Node.js/server) parsing strategies.
  */
 
-import { Article } from '$lib/models/Article.js';
-import { feeds } from '$lib/config/feeds.js';
-import { networkConfig } from '$lib/config/networkConfig.js';
-import { feedFilterRules } from '$lib/utils/feedFilterRules.js';
+import { Article } from '#lib/models/Article.js';
+import { feeds } from '#lib/config/feeds.js';
+import { networkConfig } from '#lib/config/networkConfig.js';
+import { feedFilterRules } from '#lib/utils/feedFilterRules.js';
 import { getRegisteredHosts, parseDate, cleanHtml } from './feedParser.utils.js';
 import { calculateTags } from './tagCalculator.js';
 import { extractAuthor } from './authorExtractor.js';

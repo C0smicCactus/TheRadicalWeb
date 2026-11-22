@@ -3,12 +3,12 @@
  * @description Specialized processing rules for specific feed sources (e.g., LabourStart domain filtering, Disputes Report sub-article extraction).
  */
 
-import { Article } from '$lib/models/Article.js';
+import { Article } from '#lib/models/Article.js';
 import { calculateTags } from './tagCalculator.js';
-import { networkConfig } from '$lib/config/networkConfig.js';
+import { networkConfig } from '#lib/config/networkConfig.js';
 import { scrapeImage } from './imageScraper.js';
 import { cleanHtml, parseDate } from './feedParser.utils.js';
-import { feedFilterRules } from '$lib/utils/feedFilterRules.js';
+import { feedFilterRules } from '#lib/utils/feedFilterRules.js';
 
 export const feedOverrides = {
   /**

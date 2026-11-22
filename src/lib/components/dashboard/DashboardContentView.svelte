@@ -1,8 +1,8 @@
 <script>
-  import StoryBar from '$lib/components/story/StoryBar.svelte';
-  import LoadingScreen from '$lib/components/ui/LoadingScreen.svelte';
-  import FeedGrid from '$lib/components/article/FeedGrid.svelte';
-  import SettingsControls from '$lib/components/ui/SettingsControls.svelte';
+  import StoryBar from '#lib/components/story/StoryBar.svelte';
+  import LoadingScreen from '#lib/components/ui/LoadingScreen.svelte';
+  import FeedGrid from '#lib/components/article/FeedGrid.svelte';
+  import SettingsControls from '#lib/components/ui/SettingsControls.svelte';
 
   let { fm, onShowSources, onShowAbout, onShowGitHub, onCustomColor } = $props();
 

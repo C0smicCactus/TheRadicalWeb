@@ -1,8 +1,8 @@
 <script>
   import { untrack } from 'svelte';
-  import { helpers } from '$lib/utils/helpers.js';
-  import { feedParser } from '$lib/services/feedParser.js';
-  import { useSwipeGesture } from '$lib/composables/useSwipeGesture.svelte.js';
+  import { helpers } from '#lib/utils/helpers.js';
+  import { feedParser } from '#lib/services/feedParser.js';
+  import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
 
   let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onComplete, onClose } = $props();
 

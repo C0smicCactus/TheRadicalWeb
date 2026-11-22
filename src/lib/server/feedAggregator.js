@@ -5,9 +5,9 @@
  * to bypass client-side browser CORS restrictions and massively reduce the payload.
  */
 
-import { feeds } from '$lib/config/feeds.js';
-import { feedParser } from '$lib/services/feedParser.js';
-import { networkConfig } from '$lib/config/networkConfig.js';
+import { feeds } from '#lib/config/feeds.js';
+import { feedParser } from '#lib/services/feedParser.js';
+import { networkConfig } from '#lib/config/networkConfig.js';
 
 let megaFeedPromise = null;
 

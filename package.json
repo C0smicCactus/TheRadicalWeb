@@ -3,26 +3,30 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev --port 3000 --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --port 3000 --host 0.0.0.0",
-    "lint": "svelte-check --tsconfig ./jsconfig.json",
-    "check": "svelte-check --tsconfig ./jsconfig.json"
+    "lint": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
+    "prepare": "svelte-kit sync || echo ''"
   },
   "dependencies": {
-    "@sveltejs/adapter-auto": "^3.3.1",
-    "@sveltejs/kit": "^2.16.0",
-    "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "svelte": "^5.20.0",
-    "vite": "^6.2.0"
+    "@sveltejs/kit": "^3.4.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "svelte": "^5.59.1",
+    "vite": "^8.3.8"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/adapter-static": "^4.0.1",
+    "@types/node": "^24.19.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.2",
-    "svelte-check": "^4.1.0",
+    "svelte-check": "^4.7.8",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3"
+    "typescript": "^6.0.3"
   }
 }

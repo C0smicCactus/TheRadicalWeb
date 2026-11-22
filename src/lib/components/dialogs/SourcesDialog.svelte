@@ -1,5 +1,5 @@
 <script>
-  import { feeds } from '$lib/config/feeds.js';
+  import { feeds } from '#lib/config/feeds.js';
   import ToggleSwitch from '../ui/ToggleSwitch.svelte';
 
   let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();

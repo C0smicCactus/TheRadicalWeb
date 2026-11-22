@@ -1,7 +1,7 @@
 <script>
-  import { base } from '$app/paths';
-  import { feeds } from '$lib/config/feeds.js';
-  import StoryViewer from '$lib/components/story/StoryViewer.svelte';
+  import { asset } from '$app/paths';
+  import { feeds } from '#lib/config/feeds.js';
+  import StoryViewer from '#lib/components/story/StoryViewer.svelte';
 
   let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
 
@@ -95,7 +95,7 @@
               <!-- Actual Logo Image (Only rendered if mapped in feeds.js) -->
               {#if feeds.publisherLogos[entry.source]}
                 <img
-                  src="{base || ''}/logos/{feeds.publisherLogos[entry.source]}"
+                  src={asset(`logos/${feeds.publisherLogos[entry.source]}`)}
                   alt="{entry.source}"
                   class="relative w-full h-full object-cover object-center z-10 bg-appSurface"
                   onerror={(e) => { e.currentTarget.style.display = 'none'; }}
