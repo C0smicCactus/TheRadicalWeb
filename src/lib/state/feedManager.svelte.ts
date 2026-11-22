@@ -38,7 +38,6 @@ export class FeedManager {
   visibleCount = $state(networkConfig.articlesPerPage);
 
   // === Component States ===
-  tabIndex = $state(0);
   totalSources = $state(0);
   completedSources = $state(0);
   isLoading = $state(true);
