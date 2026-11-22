@@ -7,9 +7,10 @@
     "#lib/*": "./src/lib/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000 --host 0.0.0.0",
+    "dev": "vite dev",
+    "dev:lan": "vite dev --host",
     "build": "vite build",
-    "preview": "vite preview --port 3000 --host 0.0.0.0",
+    "preview": "vite preview",
     "lint": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "prepare": "svelte-kit sync || echo ''"
