@@ -14,7 +14,7 @@
   <div class="text-[10px] font-black tracking-widest mt-2.5 mb-5 uppercase" style="color: {primaryColor};">
     RECEIVING SIGNALS...
   </div>
-  <div class="text-textSubtle text-[9px] font-bold tracking-wider uppercase max-w-[400px] text-center">
+  <div class="text-textSubtle text-[10px] font-bold tracking-wider uppercase max-w-[400px] text-center">
     {statusMessage}
   </div>
 </div>

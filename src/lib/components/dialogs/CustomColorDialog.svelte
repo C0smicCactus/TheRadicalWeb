@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dialogFocus } from '#lib/actions/dialogFocus.js';
+
   interface Props {
     currentColor: string;
     onColorSelected: (color: string) => void;
@@ -40,15 +42,18 @@
   }
 </script>
 
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onClose(); }} />
+
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
   <button
     class="absolute inset-0 w-full h-full bg-transparent cursor-default border-none"
     onclick={onClose}
     aria-label="Close custom color dialog overlay"
+    tabindex="-1"
   ></button>
-  <div class="relative bg-appSurface border border-borderSubtle max-w-[450px] w-full p-8 flex flex-col z-10 rounded-xl shadow-2xl">
+  <div class="relative bg-appSurface border border-borderSubtle max-w-[450px] w-full p-8 flex flex-col z-10 rounded-xl shadow-2xl focus:outline-hidden" role="dialog" aria-modal="true" aria-labelledby="custom-colour-title" tabindex="-1" use:dialogFocus>
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-black tracking-widest text-textMain uppercase">CUSTOM THEME COLOR</h2>
+      <h2 id="custom-colour-title" class="text-sm font-black tracking-widest text-textMain uppercase">CUSTOM THEME COLOR</h2>
       <button onclick={onClose} class="text-textMuted hover:text-textMain" aria-label="Close custom color modal">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>

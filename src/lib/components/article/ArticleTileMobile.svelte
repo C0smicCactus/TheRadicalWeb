@@ -48,12 +48,12 @@
         {#if topicsEnabled}
         <div class="absolute top-3 left-3 flex flex-col items-start gap-1 z-10 max-w-[200px]">
           {#each article.topics as topic}
-            <div class="px-2 py-1 bg-white text-black text-[9px] font-bold uppercase tracking-wider shadow-sm">{topic}</div>
+            <div class="px-2 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wider shadow-sm">{topic}</div>
           {/each}
         </div>
         {/if}
 
-        <div class="absolute top-3 right-0 px-3 py-1.5 rounded-tl-lg rounded-bl-lg text-white drop-shadow-sm text-[9px] font-black tracking-widest uppercase shadow-sm z-10" style="background-color: {primaryColor};">
+        <div class="absolute top-3 right-0 px-3 py-1.5 rounded-tl-lg rounded-bl-lg text-white drop-shadow-sm text-[10px] font-black tracking-widest uppercase shadow-sm z-10" style="background-color: {primaryColor};">
           {article.source}
         </div>
 
@@ -87,7 +87,7 @@
   </div>
 
   <div class="px-1 py-1.5 flex flex-col mt-1">
-    <div class="text-[8px] text-textSubtle font-bold uppercase tracking-wider">{helpers.formatRelativeDate(article.parsedDate)}</div>
+    <div class="text-[10px] text-textSubtle font-bold uppercase tracking-wider">{helpers.formatRelativeDate(article.parsedDate)}</div>
     <div class="mt-0.5 text-[13px] leading-[1.45em] max-h-[2.9em] text-textMain overflow-hidden relative">
       <span class="font-black text-[11px] mr-2 uppercase" style="color: {primaryColor};">{article.source}</span>
       {article.description}

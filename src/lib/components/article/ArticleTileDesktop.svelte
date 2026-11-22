@@ -16,7 +16,7 @@
       <img src={article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
     {/if}
     <div class="absolute inset-0 bg-black/10 transition-colors group-hover:bg-transparent z-0"></div>
-    <div class="absolute top-3 left-3 px-2.5 py-1 text-white drop-shadow-xs text-[9px] font-black tracking-widest uppercase rounded-sm shadow-xs z-10" style="background-color: {primaryColor};">
+    <div class="absolute top-3 left-3 px-2.5 py-1 text-white drop-shadow-xs text-[10px] font-black tracking-widest uppercase rounded-sm shadow-xs z-10" style="background-color: {primaryColor};">
       {article.source}
     </div>
   </div>

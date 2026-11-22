@@ -41,7 +41,7 @@
     <div>
       <div class="text-xs font-bold text-textMain">ENABLE TOPICS</div>
       <div class="text-[10px] text-textMuted">Show topics on articles and filters.</div>
-      <div class="text-[9px] text-textMuted font-bold uppercase mt-1">(Beta)</div>
+      <div class="text-[10px] text-textMuted font-bold uppercase mt-1">(Beta)</div>
     </div>
     <ToggleSwitch checked={fm.topicsEnabled} onchange={(e) => fm.setTopicsEnabled(e.currentTarget.checked)} primaryColor={fm.primaryColor} />
   </div>

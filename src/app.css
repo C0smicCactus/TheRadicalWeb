@@ -26,7 +26,8 @@
     --highlight: rgba(0, 0, 0, 0.05);
     --text-main: #111827;
     --text-muted: rgba(0, 0, 0, 0.6);
-    --text-subtle: rgba(0, 0, 0, 0.4);
+    /* Faint text: at least 4.5:1 contrast on the page, panels and tiles (WCAG AA) */
+    --text-subtle: rgba(0, 0, 0, 0.55);
   }
 
   .dark {
@@ -37,7 +38,7 @@
     --highlight: rgba(255, 255, 255, 0.05);
     --text-main: #ffffff;
     --text-muted: rgba(255, 255, 255, 0.54);
-    --text-subtle: rgba(255, 255, 255, 0.38);
+    --text-subtle: rgba(255, 255, 255, 0.46);
   }
 
   body {

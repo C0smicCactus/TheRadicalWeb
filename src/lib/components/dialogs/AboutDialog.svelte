@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dialogFocus } from '#lib/actions/dialogFocus.js';
+
   interface Props {
     primaryColor: string;
     onClose: () => void;
@@ -7,20 +9,23 @@
   let { primaryColor, onClose }: Props = $props();
 </script>
 
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onClose(); }} />
+
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
   <button
     class="absolute inset-0 w-full h-full bg-transparent cursor-default border-none"
     onclick={onClose}
     aria-label="Close modal overlay"
+    tabindex="-1"
   ></button>
-  <div class="relative bg-appSurface border border-borderSubtle max-w-[600px] w-full p-8 flex flex-col z-10 rounded-xl shadow-2xl">
+  <div class="relative bg-appSurface border border-borderSubtle max-w-[600px] w-full p-8 flex flex-col z-10 rounded-xl shadow-2xl focus:outline-hidden" role="dialog" aria-modal="true" aria-labelledby="about-title" tabindex="-1" use:dialogFocus>
     <div class="flex justify-between items-start">
       <div class="flex flex-col">
         <div class="flex items-center space-x-2 text-[10px] font-bold tracking-widest mb-2 text-textMain uppercase">
           <i class="fa-solid fa-circle-info" style="color: {primaryColor};"></i>
           <span>PROJECT BRIEFING</span>
         </div>
-        <h1 class="font-display text-4xl font-bold italic text-textMain">THE RADICAL</h1>
+        <h1 id="about-title" class="font-display text-4xl font-bold italic text-textMain">THE RADICAL</h1>
         <div class="text-textMuted text-xs font-bold tracking-widest mt-1">BETA</div>
       </div>
       <button onclick={onClose} class="text-textMuted hover:text-textMain" aria-label="Close modal">

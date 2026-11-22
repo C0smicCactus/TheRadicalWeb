@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import { helpers } from '#lib/utils/helpers.js';
   import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
+  import { dialogFocus } from '#lib/actions/dialogFocus.js';
   import type { Article } from '#lib/models/Article.js';
 
   interface Props {
@@ -101,12 +102,30 @@
       }
     }
   }
+
+  // Keyboard: Escape closes, arrow keys move between stories, Enter opens the current article
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') onClose();
+    else if (e.key === 'ArrowRight') nextStory();
+    else if (e.key === 'ArrowLeft') prevStory();
+    else if (e.key === 'Enter' && articles[currentIndex]) {
+      window.open(articles[currentIndex].link, '_blank', 'noopener,noreferrer');
+    }
+  }
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
+<!-- Tapping is handled here; keyboard users get the same actions through handleKeydown -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
-  class="fixed inset-0 bg-black z-50 flex flex-col cursor-pointer select-none"
+  class="fixed inset-0 bg-black z-50 flex flex-col cursor-pointer select-none focus:outline-hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{sourceName} stories"
+  tabindex="-1"
+  use:dialogFocus
   onclick={handleTap}
   ontouchstart={swipe.handleTouchStart}
   ontouchmove={swipe.handleTouchMove}

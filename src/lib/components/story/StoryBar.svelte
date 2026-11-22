@@ -92,7 +92,7 @@
       {#each finalEntries as entry (entry.source)}
         {@const logo = feeds.publisherLogos[entry.source]}
         <button
-          class="flex flex-col items-center cursor-pointer min-w-[80px] bg-transparent border-none p-0 outline-hidden hover:opacity-80 transition-opacity"
+          class="flex flex-col items-center cursor-pointer min-w-[80px] bg-transparent border-none p-0 hover:opacity-80 transition-opacity"
           onclick={() => {
             const entryIndex = finalEntries.findIndex(e => e.source === entry.source);
             activeEntryIndex = entryIndex;
@@ -130,7 +130,7 @@
             </div>
           </div>
           <div
-            class="mt-2 w-20 text-center truncate text-[9px] font-bold"
+            class="mt-2 w-20 text-center truncate text-[10px] font-bold"
             style="color: {entry.isFullyViewed ? 'var(--text-subtle)' : 'var(--text-main)'};"
           >
             {entry.source}
