@@ -30,7 +30,7 @@
 ## ⚠️ Important
 
 > [!WARNING]
-> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it utilises a static API generated hourly via GitHub Actions to safely fetch data without relying on unreliable browser CORS proxies. You may still encounter incomplete metadata as the custom parsing engines are refined.
+> **Beta Disclaimer:** The Radical is currently in active development. As a centralised hub for independent media, it utilises a static API rebuilt by GitHub Actions on an hourly schedule (in practice GitHub often runs it every few hours) to safely fetch data without relying on unreliable browser CORS proxies. You may still encounter incomplete metadata as the custom parsing engines are refined.
 
 ---
 
@@ -54,7 +54,7 @@ The Radical was born out of a need to centralise news from leftist and independe
 
 ## 📊 Feed Sources
 
-The Radical aggregates from **43 independent news sources**, organised into three categories:
+The Radical aggregates from **43 independent news sources** (44 feeds, as Black Peoples Union has two), organised into three categories:
 
 <table>
 <tr>
@@ -127,7 +127,7 @@ The Radical aggregates from **43 independent news sources**, organised into thre
 > All the RSS feeds used in this project can be found
 > [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/feeds.ts).
 
-> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 44 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
+> Alternatively, the project automatically generates a unified, filtered "Mega-Feed" each time the site rebuilds. You can subscribe to all 44 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
 > 
 > `https://c0smiccactus.github.io/TheRadicalWeb/radical-feed.xml`
 
@@ -152,7 +152,7 @@ Want to run The Radical locally or contribute to the project?
    ```bash
    npm run dev
    ```
-   *The app will be available at `http://localhost:3000`*
+   *The app will be available at `http://localhost:3000`. To test on a phone on the same Wi-Fi, use `npm run dev:lan` instead.*
 
 ---
 
