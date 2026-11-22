@@ -55,20 +55,20 @@
 
     <div class="flex-1 overflow-y-auto mb-6 pr-2 space-y-1" style="opacity: {localAllEnabled ? 0.4 : 1.0}; pointer-events: {localAllEnabled ? 'none' : 'auto'};">
       {#each allNames as name}
-        <label class="flex items-center justify-between py-2 border-b border-borderSubtle cursor-pointer hover:bg-highlightOverlay px-2 rounded">
+        <label class="flex items-center justify-between py-2 border-b border-borderSubtle cursor-pointer hover:bg-highlightOverlay px-2 rounded-sm">
           <span class="text-xs font-medium text-textMain">{name}</span>
           <input
             type="checkbox"
             checked={localAllEnabled || localEnabledSet.has(name)}
             onchange={(e) => toggleSource(name, /** @type {HTMLInputElement} */ (e.currentTarget).checked)}
-            class="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+            class="w-4 h-4 accent-amber-500 rounded-sm cursor-pointer"
             style="accent-color: {primaryColor};"
           />
         </label>
       {/each}
     </div>
 
-    <button onclick={save} class="w-full py-4 text-white font-black tracking-widest uppercase transition-opacity hover:opacity-90 rounded" style="background-color: {primaryColor};">
+    <button onclick={save} class="w-full py-4 text-white font-black tracking-widest uppercase transition-opacity hover:opacity-90 rounded-sm" style="background-color: {primaryColor};">
       SAVE & REFRESH
     </button>
   </div>

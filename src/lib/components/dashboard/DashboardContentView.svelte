@@ -41,8 +41,8 @@
           <FeedGrid {fm} />
 
           <!-- Desktop Sidebar Layer -->
-          <aside class="hidden md:flex w-72 xl:w-80 flex-shrink-0 flex-col sticky top-6">
-            <div class="bg-appSurface border border-borderSubtle rounded-2xl p-6 flex flex-col shadow-sm">
+          <aside class="hidden md:flex w-72 xl:w-80 shrink-0 flex-col sticky top-6">
+            <div class="bg-appSurface border border-borderSubtle rounded-2xl p-6 flex flex-col shadow-xs">
               <SettingsControls {fm} {onShowSources} {onShowAbout} {onShowGitHub} {onCustomColor} />
             </div>
           </aside>

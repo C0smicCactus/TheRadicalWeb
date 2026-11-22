@@ -41,17 +41,17 @@
         {#if finalThumbnail || article.thumbnail}
           <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
         {/if}
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90"></div>
+        <div class="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/90"></div>
 
         {#if topicsEnabled}
         <div class="absolute top-3 left-3 flex flex-col items-start gap-1 z-10 max-w-[200px]">
           {#each article.topics as topic}
-            <div class="px-2 py-1 bg-white text-black text-[9px] font-bold uppercase tracking-wider shadow">{topic}</div>
+            <div class="px-2 py-1 bg-white text-black text-[9px] font-bold uppercase tracking-wider shadow-sm">{topic}</div>
           {/each}
         </div>
         {/if}
 
-        <div class="absolute top-3 right-0 px-3 py-1.5 rounded-tl-lg rounded-bl-lg text-white drop-shadow text-[9px] font-black tracking-widest uppercase shadow z-10" style="background-color: {primaryColor};">
+        <div class="absolute top-3 right-0 px-3 py-1.5 rounded-tl-lg rounded-bl-lg text-white drop-shadow-sm text-[9px] font-black tracking-widest uppercase shadow-sm z-10" style="background-color: {primaryColor};">
           {article.source}
         </div>
 
@@ -68,13 +68,13 @@
           <div class="mt-4 font-display font-black text-lg text-textMain leading-tight uppercase line-clamp-3 tracking-tighter">{article.title}</div>
           <div class="mt-4 text-textMuted text-sm leading-relaxed line-clamp-6 pr-1">{article.description}</div>
         </div>
-        <a href={article.link} target="_blank" rel="noopener noreferrer" onclick={openLink} class="block text-center w-full bg-textMain text-appBackground py-4 font-black text-[10px] tracking-widest uppercase hover:opacity-90 transition-opacity mt-4 border border-borderSubtle rounded">OPEN ARTICLE</a>
+        <a href={article.link} target="_blank" rel="noopener noreferrer" onclick={openLink} class="block text-center w-full bg-textMain text-appBackground py-4 font-black text-[10px] tracking-widest uppercase hover:opacity-90 transition-opacity mt-4 border border-borderSubtle rounded-sm">OPEN ARTICLE</a>
       </div>
     </div>
 
     <div class="absolute bottom-3 left-0 right-0 flex justify-center space-x-1.5 pointer-events-none z-20">
-      <div class="w-1.5 h-1.5 rounded-full transition-colors bg-white shadow-sm" style="opacity: {currentIndex === 0 ? 1 : 0.3};"></div>
-      <div class="w-1.5 h-1.5 rounded-full transition-colors bg-white shadow-sm" style="opacity: {currentIndex === 1 ? 1 : 0.3};"></div>
+      <div class="w-1.5 h-1.5 rounded-full transition-colors bg-white shadow-xs" style="opacity: {currentIndex === 0 ? 1 : 0.3};"></div>
+      <div class="w-1.5 h-1.5 rounded-full transition-colors bg-white shadow-xs" style="opacity: {currentIndex === 1 ? 1 : 0.3};"></div>
     </div>
 
     {#if swipe.isSwiping && swipe.swipeDirection}

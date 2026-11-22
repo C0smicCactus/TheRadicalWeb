@@ -8,12 +8,12 @@
   }
 </script>
 
-<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
+<a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full text-left flex flex-col lg:flex-row gap-0 group cursor-pointer bg-appSurface border border-borderSubtle rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 p-0 m-0" onclick={openLink} use:lazyLoadAction>
   <div class="relative w-full lg:w-[60%] aspect-video bg-tileBackground overflow-hidden border-r border-borderSubtle">
     {#if finalThumbnail || article.thumbnail}
       <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
     {/if}
-    <div class="absolute top-4 left-4 px-3 py-1.5 text-white drop-shadow-sm text-[10px] font-black tracking-widest uppercase rounded shadow-sm z-10" style="background-color: {primaryColor};">
+    <div class="absolute top-4 left-4 px-3 py-1.5 text-white drop-shadow-xs text-[10px] font-black tracking-widest uppercase rounded-sm shadow-xs z-10" style="background-color: {primaryColor};">
       {article.source}
     </div>
   </div>
@@ -26,7 +26,7 @@
         <span style="color: {primaryColor};">{article.topics[0]}</span>
       {/if}
     </div>
-    <h2 class="font-display text-3xl xl:text-4xl font-black italic leading-tight text-textMain group-hover:underline decoration-[3px] underline-offset-4" style="text-decoration-color: {primaryColor};">
+    <h2 class="font-display text-3xl xl:text-4xl font-black italic leading-tight xl:leading-10 text-textMain group-hover:underline decoration-[3px] underline-offset-4" style="text-decoration-color: {primaryColor};">
       {article.title}
     </h2>
     <p class="text-base text-textMuted line-clamp-4 leading-relaxed mt-2">{article.description}</p>

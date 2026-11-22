@@ -1,6 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Theme colours point at the CSS variables below, so light/dark mode is just a variable swap. */
+@theme inline {
+  --color-appBackground: var(--bg-main);
+  --color-appSurface: var(--bg-surface);
+  --color-tileBackground: var(--bg-tile);
+  --color-borderSubtle: var(--border-subtle);
+  --color-highlightOverlay: var(--highlight);
+  --color-textMain: var(--text-main);
+  --color-textMuted: var(--text-muted);
+  --color-textSubtle: var(--text-subtle);
+}
+
+@theme {
+  --font-sans: 'Manrope', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+}
 
 @layer base {
   :root {
@@ -13,7 +28,7 @@
     --text-muted: rgba(0, 0, 0, 0.6);
     --text-subtle: rgba(0, 0, 0, 0.4);
   }
-  
+
   .dark {
     --bg-main: #0e0e0e;
     --bg-surface: #131313;
@@ -31,6 +46,18 @@
     padding: 0;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Keep Tailwind 3 behaviour: pointer cursor on buttons, grey placeholders.
+     See https://tailwindcss.com/docs/upgrade-guide#preflight-changes */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
 }
 
 ::-webkit-scrollbar {
@@ -41,14 +68,12 @@
   @apply bg-appBackground;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-borderSubtle rounded;
+  @apply bg-borderSubtle rounded-sm;
 }
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-textSubtle;
 }
 
-@layer utilities {
-  .pt-safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
+@utility pt-safe-top {
+  padding-top: env(safe-area-inset-top);
 }

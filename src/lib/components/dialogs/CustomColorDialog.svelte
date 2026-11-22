@@ -54,18 +54,18 @@
         value={hexInput}
         oninput={handleInput}
         placeholder="e.g. FF5733"
-        class="w-full bg-appBackground border border-borderSubtle focus:border-textMain text-center py-3 pl-10 pr-4 text-lg font-bold text-textMain uppercase outline-none rounded"
+        class="w-full bg-appBackground border border-borderSubtle focus:border-textMain text-center py-3 pl-10 pr-4 text-lg font-bold text-textMain uppercase outline-hidden rounded-sm"
       />
     </div>
 
     <div class="flex items-center space-x-3 mb-8">
       <span class="text-[10px] font-bold tracking-widest text-textSubtle uppercase">PREVIEW</span>
-      <div class="w-10 h-10 border-2 border-borderSubtle rounded shadow-sm" style="background-color: {previewColor};"></div>
+      <div class="w-10 h-10 border-2 border-borderSubtle rounded-sm shadow-xs" style="background-color: {previewColor};"></div>
     </div>
 
     <button
       onclick={apply}
-      class="w-full py-4 font-black tracking-widest text-white uppercase transition-opacity hover:opacity-90 rounded"
+      class="w-full py-4 font-black tracking-widest text-white uppercase transition-opacity hover:opacity-90 rounded-sm"
       style="background-color: {previewColor};"
     >
       APPLY COLOR

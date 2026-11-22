@@ -139,7 +139,7 @@
         />
       {/if}
     {/if}
-    <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 40%, rgba(0,0,0,0.95) 100%);"></div>
+    <div class="absolute inset-0 bg-linear-to-b from-black/80 via-transparent to-black" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 40%, rgba(0,0,0,0.95) 100%);"></div>
   </div>
 
   <!-- UI Content Overlay -->
@@ -185,10 +185,10 @@
     <!-- Story Content Footer -->
     {#if articles[currentIndex]}
       <div class="p-6 pb-10 flex flex-col max-w-[800px] mx-auto w-full">
-        <h2 class="font-display text-2xl sm:text-3xl font-bold italic leading-tight text-white mb-4">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold italic leading-tight sm:leading-9 text-white mb-4">
           {articles[currentIndex].title}
         </h2>
-        <p class="text-white/80 text-sm sm:text-base line-clamp-3 leading-relaxed">
+        <p class="text-white/80 text-sm sm:text-base line-clamp-3 leading-relaxed sm:leading-6">
           {articles[currentIndex].description}
         </p>
 

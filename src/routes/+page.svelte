@@ -47,11 +47,11 @@
   />
 
   <nav class="md:hidden flex items-center justify-around bg-appBackground border-t border-borderSubtle py-2.5 z-20 select-none">
-    <button class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-none" style="color: {fm.tabIndex === 0 ? fm.primaryColor : 'var(--text-subtle)'}" onclick={() => fm.tabIndex = 0}>
+    <button class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-hidden" style="color: {fm.tabIndex === 0 ? fm.primaryColor : 'var(--text-subtle)'}" onclick={() => fm.tabIndex = 0}>
       <i class="fa-solid fa-house text-base mb-1"></i>
       <span class="text-[10px] font-bold tracking-wider">Home</span>
     </button>
-    <button class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-none" style="color: {fm.tabIndex === 1 ? fm.primaryColor : 'var(--text-subtle)'}" onclick={() => fm.tabIndex = 1}>
+    <button class="flex flex-col items-center cursor-pointer px-6 py-1 transition-colors outline-hidden" style="color: {fm.tabIndex === 1 ? fm.primaryColor : 'var(--text-subtle)'}" onclick={() => fm.tabIndex = 1}>
       <i class="fa-solid fa-play text-base mb-1"></i>
       <span class="text-[10px] font-bold tracking-wider">Videos</span>
     </button>

@@ -22,7 +22,7 @@
 <header class="flex flex-col w-full z-20">
   <!-- Beta Banner -->
   <div class="w-full py-1.5 text-center" style="background-color: {primaryColor};">
-    <span class="text-white drop-shadow text-[10px] font-black tracking-widest uppercase">
+    <span class="text-white drop-shadow-sm text-[10px] font-black tracking-widest uppercase">
       THIS WEBSITE IS STILL IN BETA — DEVELOPMENT IN PROGRESS
     </span>
   </div>
@@ -34,7 +34,7 @@
       <!-- Brand Logo -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none flex-shrink-0" style="color: {primaryColor};" onmousedown={handleLogoMousedown} onmouseup={handleLogoMouseup}>
+      <div class="cursor-pointer font-display font-bold text-2xl tracking-tighter select-none shrink-0" style="color: {primaryColor};" onmousedown={handleLogoMousedown} onmouseup={handleLogoMouseup}>
         {width > 500 ? "THE RADICAL" : "TR"}
       </div>
 
@@ -47,13 +47,13 @@
             bind:value={searchQuery}
             oninput={() => onSearchChanged(searchQuery)}
             placeholder="Search articles..."
-            class="bg-transparent border-none outline-none text-[13px] text-textMain placeholder-textMuted w-full"
+            class="bg-transparent border-none outline-hidden text-[13px] text-textMain placeholder-textMuted w-full"
           />
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="flex items-center gap-2 shrink-0">
         <!-- Theme Toggle -->
         <button
           onclick={onToggleTheme}

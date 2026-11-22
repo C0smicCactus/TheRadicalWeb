@@ -33,7 +33,7 @@
       Designed for tracking material and economic realities without having to manually check dozens of sources every day.
     </p>
 
-    <button onclick={onClose} class="w-full mt-10 py-4 text-white font-black tracking-widest uppercase transition-opacity hover:opacity-90 rounded" style="background-color: {primaryColor};">
+    <button onclick={onClose} class="w-full mt-10 py-4 text-white font-black tracking-widest uppercase transition-opacity hover:opacity-90 rounded-sm" style="background-color: {primaryColor};">
       CLOSE
     </button>
   </div>

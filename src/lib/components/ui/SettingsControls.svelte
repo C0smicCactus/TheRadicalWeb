@@ -44,10 +44,10 @@
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-3 uppercase">THEME PALETTE</div>
     <div class="flex flex-wrap gap-2.5">
       {#each colors.themeChoices as color}
-        <button onclick={() => fm.updateTheme(color)} class="w-[35px] h-[35px] border-2 cursor-pointer transition-transform hover:scale-105 rounded" style="background-color: {color}; border-color: {fm.primaryColor === color ? 'var(--text-main)' : 'transparent'};" aria-label="Select theme"></button>
+        <button onclick={() => fm.updateTheme(color)} class="w-[35px] h-[35px] border-2 cursor-pointer transition-transform hover:scale-105 rounded-sm" style="background-color: {color}; border-color: {fm.primaryColor === color ? 'var(--text-main)' : 'transparent'};" aria-label="Select theme"></button>
       {/each}
-      <button onclick={onCustomColor} class="w-[35px] h-[35px] border-2 border-borderSubtle cursor-pointer flex items-center justify-center transition-transform hover:scale-105 rounded shadow" style="background: linear-gradient(135deg, #FF5757, #57FFFF, #57FF57, #FF57FF, #FF5757);">
-        <i class="fa-solid fa-palette text-white drop-shadow text-xs"></i>
+      <button onclick={onCustomColor} class="w-[35px] h-[35px] border-2 border-borderSubtle cursor-pointer flex items-center justify-center transition-transform hover:scale-105 rounded-sm shadow-sm" style="background: linear-gradient(135deg, #FF5757, #57FFFF, #57FF57, #FF57FF, #FF5757);">
+        <i class="fa-solid fa-palette text-white drop-shadow-sm text-xs"></i>
       </button>
     </div>
   </div>
@@ -59,7 +59,7 @@
     <div class="text-[10px] text-textSubtle font-bold tracking-wider mb-3 uppercase">TOPIC FILTERS</div>
     <div class="flex flex-col gap-2">
       {#each filterOptions as filterName}
-        <button onclick={() => fm.setActiveFilter(filterName)} class="w-full text-left px-3.5 py-2 border transition-colors text-[11px] font-bold uppercase rounded" style="background-color: {fm.activeFilter === filterName ? fm.primaryColor : 'transparent'}; border-color: {fm.activeFilter === filterName ? fm.primaryColor : 'var(--border-subtle)'}; color: {fm.activeFilter === filterName ? '#fff' : 'var(--text-main)'};">
+        <button onclick={() => fm.setActiveFilter(filterName)} class="w-full text-left px-3.5 py-2 border transition-colors text-[11px] font-bold uppercase rounded-sm" style="background-color: {fm.activeFilter === filterName ? fm.primaryColor : 'transparent'}; border-color: {fm.activeFilter === filterName ? fm.primaryColor : 'var(--border-subtle)'}; color: {fm.activeFilter === filterName ? '#fff' : 'var(--text-main)'};">
           {filterName}
         </button>
       {/each}
@@ -70,7 +70,7 @@
 
   <!-- Reset Feed Button -->
   {#if showResetConfirm}
-    <div class="bg-appSurface border border-red-500/50 p-4 text-sm rounded shadow-sm">
+    <div class="bg-appSurface border border-red-500/50 p-4 text-sm rounded-sm shadow-xs">
       <div class="font-bold text-white mb-2">Reset Feed?</div>
       <div class="text-xs text-textMuted mb-4 leading-relaxed">
         This will wipe all cached articles and viewed story tracking. A fresh feed update will load immediately.
@@ -85,7 +85,7 @@
       </div>
     </div>
   {:else}
-    <button onclick={() => showResetConfirm = true} class="w-full flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 rounded hover:bg-red-500/20 transition-colors">
+    <button onclick={() => showResetConfirm = true} class="w-full flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 rounded-sm hover:bg-red-500/20 transition-colors">
       <div class="flex items-center space-x-3 text-[10px] font-black tracking-widest text-red-500 uppercase">
         <i class="fa-solid fa-rotate-right text-xs"></i><span>RESET FEED</span>
       </div>
