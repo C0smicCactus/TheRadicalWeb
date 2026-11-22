@@ -88,7 +88,7 @@
 
 {#if finalEntries.length > 0}
   <div class="w-full border-b border-borderSubtle flex justify-center bg-appBackground shadow-xs z-10">
-    <div class="max-w-[1754px] w-full h-[135px] overflow-x-auto px-6 py-3 flex space-x-5 items-center">
+    <div class="max-w-[1754px] w-full h-[135px] overflow-x-auto pointer-coarse:scrollbar-none px-6 py-3 flex space-x-5 items-center">
       {#each finalEntries as entry (entry.source)}
         {@const logo = feeds.publisherLogos[entry.source]}
         <button
