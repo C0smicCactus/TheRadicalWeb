@@ -1,6 +1,6 @@
 /**
  * @file helpers.ts
- * @description General-purpose utility functions for date formatting and function debouncing.
+ * @description General-purpose helpers: relative date formatting and limiting how often a function runs.
  */
 
 export const helpers = {
@@ -41,48 +41,32 @@ export const helpers = {
   },
 
   /**
-   * Creates a debounced version of a function that delays invocation until after `wait` milliseconds.
-   * Invokes the function immediately on the first call, then queues subsequent calls.
-   * The debounced function has a `flush()` method to force immediate execution.
+   * Limits how often a function runs (used to throttle localStorage writes).
+   * The first call runs straight away. Calls that follow within `wait` milliseconds
+   * are combined: only the last one runs, `wait` milliseconds after the final call.
    *
-   * @param fn - The function to debounce.
-   * @param wait - Wait time in milliseconds (default: 1000).
-   * @returns Debounced function with `flush()` and `cancel()` methods.
+   * @param fn - The function to limit.
+   * @param wait - Quiet time in milliseconds (default: 1000).
    */
   debounce<Args extends unknown[]>(fn: (...args: Args) => void, wait = 1000) {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let pendingArgs: Args | undefined;
+    let pendingArgs: Args | null = null;
 
-    const debounced = function (this: unknown, ...args: Args) {
-      pendingArgs = args;
-
-      if (!timeoutId) {
-        fn.apply(this, args);
+    return (...args: Args) => {
+      if (timeoutId === null) {
+        fn(...args); // first call in a burst: run now
+      } else {
+        pendingArgs = args; // later call in the same burst: keep only the latest
+        clearTimeout(timeoutId);
       }
-
-      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         timeoutId = null;
         if (pendingArgs) {
-          fn.apply(this, pendingArgs);
+          const latest = pendingArgs;
+          pendingArgs = null;
+          fn(...latest);
         }
       }, wait);
     };
-
-    debounced.flush = function () {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-    };
-
-    debounced.cancel = function () {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-    };
-
-    return debounced;
   }
 };
