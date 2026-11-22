@@ -65,10 +65,9 @@ function processExtractedItem({
   }
 
   if (Object.values(feeds.globalSources).includes(sourceName)) {
-    const isRelevant = feeds.auKeywords.some(k => {
-      const pattern = new RegExp(`\\b${k.toLowerCase()}\\b`, 'i');
-      return pattern.test(title.toLowerCase());
-    });
+    const isRelevant =
+      feeds.auKeywords.some(k => new RegExp(`\\b${k}\\b`, 'i').test(title)) ||
+      feeds.auAbbreviations.some(k => new RegExp(`\\b${k}\\b`).test(title));
     if (!isRelevant) return false;
   }
 

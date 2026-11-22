@@ -15,7 +15,10 @@ interface FeedsConfig {
   coreSources: Record<string, string>;
   globalSources: Record<string, string>;
   extendedSources: Record<string, string>;
+  /** Place names that mark a global-source article as Australian (whole words, any case) */
   auKeywords: string[];
+  /** State and territory abbreviations, matched only in capitals so 'act' or 'Vic' in ordinary text don't count */
+  auAbbreviations: string[];
   /** Publisher name -> logo file name, or '' when there is no logo */
   publisherLogos: Record<string, LogoFile | ''>;
 }
@@ -72,10 +75,13 @@ export const feeds: FeedsConfig = {
     "https://www.theguardian.com/australia-news/australian-trade-unions/rss": "THE GUARDIAN (GNM)"
   },
   auKeywords: [
-    "australia", "australian", "new south wales", "nsw", "sydney", "victoria", "vic", "melbourne",
-    "queensland", "qld", "brisbane", "western australia", "wa", "perth", "south australia", "sa",
-    "adelaide", "tasmania", "tas", "hobart", "act", "canberra", "nt", "darwin"
+    "australia", "australian", "new south wales", "sydney", "victoria", "melbourne",
+    "queensland", "brisbane", "western australia", "perth", "south australia",
+    "adelaide", "tasmania", "hobart", "australian capital territory", "canberra",
+    "northern territory", "darwin"
   ],
+  // WA and SA are left out: in overseas outlets they usually mean Washington state and South Africa.
+  auAbbreviations: ["NSW", "QLD", "VIC", "TAS", "ACT", "NT"],
 
   // Map the exact publisher name to the filename inside static/logos/
   // Example: "GREEN LEFT": "greenleft-logo.png"
