@@ -1,3 +1,16 @@
+/* Cascade layer order: Tailwind's own, with Font Awesome added after base so that utility
+   classes like text-lg still size icons (Tailwind 4's layers lose to unlayered CSS). */
+@layer properties, theme, base, fontawesome, components, utilities;
+
+/* Fonts and icons are bundled with the site rather than loaded from Google Fonts and a CDN,
+   so visitors' browsers don't contact those services. */
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/space-grotesk';
+/*! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. */
+@import '@fortawesome/fontawesome-free/css/fontawesome.min.css' layer(fontawesome);
+@import '@fortawesome/fontawesome-free/css/solid.min.css' layer(fontawesome);
+@import '@fortawesome/fontawesome-free/css/brands.min.css' layer(fontawesome);
+
 @import 'tailwindcss';
 
 /* Theme colours point at the CSS variables below, so light/dark mode is just a variable swap. */
@@ -13,8 +26,8 @@
 }
 
 @theme {
-  --font-sans: 'Manrope', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans: 'Manrope Variable', sans-serif;
+  --font-display: 'Space Grotesk Variable', sans-serif;
 }
 
 @layer base {

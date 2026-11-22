@@ -21,17 +21,6 @@
 				document.documentElement.classList.remove('dark');
 			}
 		</script>
-		<!-- Google Fonts: Manrope & Space Grotesk -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800;900&family=Space+Grotesk:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
-		<!-- Font Awesome 6, loaded into a cascade layer between Tailwind's base styles and its utilities,
-		     so classes like text-lg can still size icons (Tailwind 4 puts its CSS in layers, which lose to unlayered CSS).
-		     The layer list matches Tailwind's own order, with fontawesome added after base. -->
-		<style>
-			@layer properties, theme, base, fontawesome, components, utilities;
-			@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css') layer(fontawesome);
-		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="transition-colors duration-200">
