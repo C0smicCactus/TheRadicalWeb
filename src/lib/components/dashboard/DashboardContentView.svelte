@@ -1,12 +1,21 @@
-<script>
+<script lang="ts">
   import StoryBar from '#lib/components/story/StoryBar.svelte';
   import LoadingScreen from '#lib/components/ui/LoadingScreen.svelte';
   import FeedGrid from '#lib/components/article/FeedGrid.svelte';
   import SettingsControls from '#lib/components/ui/SettingsControls.svelte';
+  import type { FeedManager } from '#lib/state/feedManager.svelte.js';
 
-  let { fm, onShowSources, onShowAbout, onShowGitHub, onCustomColor } = $props();
+  interface Props {
+    fm: FeedManager;
+    onShowSources: () => void;
+    onShowAbout: () => void;
+    onShowGitHub: () => void;
+    onCustomColor: () => void;
+  }
 
-  let scrollContainer = $state();
+  let { fm, onShowSources, onShowAbout, onShowGitHub, onCustomColor }: Props = $props();
+
+  let scrollContainer = $state<HTMLDivElement>();
 
   function handleScroll() {
     if (fm.isLoading || fm.isLoadingMore) return;

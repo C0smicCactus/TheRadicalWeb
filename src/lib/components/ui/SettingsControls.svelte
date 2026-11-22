@@ -1,8 +1,17 @@
-<script>
+<script lang="ts">
   import { topics } from '#lib/config/topics.js';
   import { colors } from '#lib/config/colors.js';
   import ToggleSwitch from './ToggleSwitch.svelte';
   import ActionLink from './ActionLink.svelte';
+  import type { FeedManager } from '#lib/state/feedManager.svelte.js';
+
+  interface Props {
+    fm: FeedManager;
+    onShowSources: () => void;
+    onShowAbout: () => void;
+    onShowGitHub: () => void;
+    onCustomColor: () => void;
+  }
 
   let { 
     fm,
@@ -10,7 +19,7 @@
     onShowAbout,
     onShowGitHub,
     onCustomColor 
-  } = $props();
+  }: Props = $props();
 
   const filterOptions = ["ALL", ...topics.map(t => t.name)];
   
@@ -46,7 +55,7 @@
       {#each colors.themeChoices as color}
         <button onclick={() => fm.updateTheme(color)} class="w-[35px] h-[35px] border-2 cursor-pointer transition-transform hover:scale-105 rounded-sm" style="background-color: {color}; border-color: {fm.primaryColor === color ? 'var(--text-main)' : 'transparent'};" aria-label="Select theme"></button>
       {/each}
-      <button onclick={onCustomColor} class="w-[35px] h-[35px] border-2 border-borderSubtle cursor-pointer flex items-center justify-center transition-transform hover:scale-105 rounded-sm shadow-sm" style="background: linear-gradient(135deg, #FF5757, #57FFFF, #57FF57, #FF57FF, #FF5757);">
+      <button onclick={onCustomColor} aria-label="Choose a custom colour" class="w-[35px] h-[35px] border-2 border-borderSubtle cursor-pointer flex items-center justify-center transition-transform hover:scale-105 rounded-sm shadow-sm" style="background: linear-gradient(135deg, #FF5757, #57FFFF, #57FF57, #FF57FF, #FF5757);">
         <i class="fa-solid fa-palette text-white drop-shadow-sm text-xs"></i>
       </button>
     </div>

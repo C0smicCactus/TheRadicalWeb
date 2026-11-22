@@ -125,7 +125,7 @@ The Radical aggregates from **43 independent news sources**, organised into thre
 > **Prefer your own RSS reader? No dramas!**
 >
 > All the RSS feeds used in this project can be found
-> [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/appFeeds.js).
+> [here](https://github.com/C0smicCactus/TheRadicalWeb/blob/main/src/lib/config/feeds.ts).
 
 > Alternatively, the project automatically generates a unified, filtered "Mega-Feed" every hour. You can subscribe to all 44 feed URLs at once by pasting this exact link into your favourite RSS app (like Feedly, Inoreader, or Apple Podcasts):
 > 

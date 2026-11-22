@@ -1,8 +1,17 @@
-<script>
+<script lang="ts">
   import { feeds } from '#lib/config/feeds.js';
   import ToggleSwitch from '../ui/ToggleSwitch.svelte';
 
-  let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose } = $props();
+  interface Props {
+    primaryColor: string;
+    extendedMode: boolean;
+    allSourcesEnabled: boolean;
+    enabledSources: Set<string>;
+    onSaved: (allEnabled: boolean, enabled: Set<string>) => void;
+    onClose: () => void;
+  }
+
+  let { primaryColor, extendedMode, allSourcesEnabled, enabledSources, onSaved, onClose }: Props = $props();
 
   let allNames = $derived.by(() => {
     const list = [
@@ -13,6 +22,8 @@
     return [...new Set(list)].sort();
   });
 
+  // The dialog edits a copy of the settings taken when it opens; changes apply on save.
+  // svelte-ignore state_referenced_locally
   let initValues = { all: allSourcesEnabled, set: enabledSources };
   let localAllEnabled = $state(initValues.all);
   let localEnabledSet = $state(new Set(initValues.set));
@@ -22,7 +33,7 @@
     onClose();
   }
 
-  function toggleSource(name, checked) {
+  function toggleSource(name: string, checked: boolean) {
     const next = new Set(localEnabledSet);
     if (checked) next.add(name);
     else next.delete(name);
@@ -50,7 +61,7 @@
         <div class="font-bold text-[13px] text-textMain">ALL SOURCES</div>
         <div class="text-[11px] text-textMuted">Include all signals automatically.</div>
       </div>
-      <ToggleSwitch checked={localAllEnabled} onchange={(e) => localAllEnabled = /** @type {HTMLInputElement} */ (e.currentTarget).checked} primaryColor={primaryColor} />
+      <ToggleSwitch checked={localAllEnabled} onchange={(e) => localAllEnabled = e.currentTarget.checked} primaryColor={primaryColor} />
     </div>
 
     <div class="flex-1 overflow-y-auto mb-6 pr-2 space-y-1" style="opacity: {localAllEnabled ? 0.4 : 1.0}; pointer-events: {localAllEnabled ? 'none' : 'auto'};">
@@ -60,7 +71,7 @@
           <input
             type="checkbox"
             checked={localAllEnabled || localEnabledSet.has(name)}
-            onchange={(e) => toggleSource(name, /** @type {HTMLInputElement} */ (e.currentTarget).checked)}
+            onchange={(e) => toggleSource(name, e.currentTarget.checked)}
             class="w-4 h-4 accent-amber-500 rounded-sm cursor-pointer"
             style="accent-color: {primaryColor};"
           />

@@ -1,6 +1,13 @@
 <!-- src/lib/components/ui/ToggleSwitch.svelte -->
-<script>
-  let { checked = $bindable(), primaryColor, ...rest } = $props();
+<script lang="ts">
+  import type { HTMLInputAttributes } from 'svelte/elements';
+
+  interface Props extends Omit<HTMLInputAttributes, 'type' | 'checked'> {
+    checked?: boolean;
+    primaryColor: string;
+  }
+
+  let { checked = $bindable(), primaryColor, ...rest }: Props = $props();
 </script>
 
 <label class="relative inline-flex items-center cursor-pointer">

@@ -1,5 +1,16 @@
-<script>
-  let { width, primaryColor, isDark, onToggleTheme, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings } = $props();
+<script lang="ts">
+  interface Props {
+    width: number;
+    primaryColor: string;
+    isDark: boolean;
+    onToggleTheme: () => void;
+    searchQuery?: string;
+    onSearchChanged: (query: string) => void;
+    onLogoTap: () => void;
+    onOpenSettings: () => void;
+  }
+
+  let { width, primaryColor, isDark, onToggleTheme, searchQuery = $bindable(), onSearchChanged, onLogoTap, onOpenSettings }: Props = $props();
 
   let mouseDownTime = $state(0);
 
@@ -45,7 +56,7 @@
           <input
             type="text"
             bind:value={searchQuery}
-            oninput={() => onSearchChanged(searchQuery)}
+            oninput={() => onSearchChanged(searchQuery ?? '')}
             placeholder="Search articles..."
             class="bg-transparent border-none outline-hidden text-[13px] text-textMain placeholder-textMuted w-full"
           />
@@ -66,6 +77,7 @@
         <!-- Settings Button (Hidden on Desktop, moved to Sidebar) -->
         <button
           onclick={onOpenSettings}
+          aria-label="Open settings"
           class="md:hidden flex items-center justify-center bg-highlightOverlay border border-borderSubtle rounded-full w-9 h-9 text-textMain hover:bg-highlightOverlay transition-colors"
         >
           <i class="fa-solid fa-sliders text-xs" style="color: {primaryColor};"></i>

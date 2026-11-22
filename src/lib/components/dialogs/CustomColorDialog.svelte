@@ -1,10 +1,19 @@
-<script>
-  let { currentColor, onColorSelected, onClose } = $props();
+<script lang="ts">
+  interface Props {
+    currentColor: string;
+    onColorSelected: (color: string) => void;
+    onClose: () => void;
+  }
 
+  let { currentColor, onColorSelected, onClose }: Props = $props();
+
+  // The dialog starts from the current colour once; later changes to the prop are not wanted here.
+  // svelte-ignore state_referenced_locally
   let hexInput = $state(currentColor ? currentColor.replace('#', '') : 'f59e0b');
+  // svelte-ignore state_referenced_locally
   let previewColor = $state(currentColor || '#f59e0b');
 
-  function parseHex(hexStr) {
+  function parseHex(hexStr: string): string | null {
     if (!hexStr) return null;
     let clean = hexStr.trim().replace('#', '');
     if (clean.length === 6 && /^[0-9A-Fa-f]{6}$/.test(clean)) {
@@ -13,8 +22,8 @@
     return null;
   }
 
-  function handleInput(e) {
-    const target = /** @type {HTMLInputElement} */ (e.currentTarget);
+  function handleInput(e: Event) {
+    const target = e.currentTarget as HTMLInputElement;
     hexInput = target.value;
     const parsed = parseHex(hexInput);
     if (parsed) {

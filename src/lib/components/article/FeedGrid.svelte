@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
   import ArticleTile from '#lib/components/article/ArticleTile.svelte';
-  let { fm } = $props();
+  import type { FeedManager } from '#lib/state/feedManager.svelte.js';
+
+  let { fm }: { fm: FeedManager } = $props();
 </script>
 
 <!-- Reusable Svelte 5 Snippet for the UI Marker -->

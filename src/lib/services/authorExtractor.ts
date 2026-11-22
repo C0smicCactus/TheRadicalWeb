@@ -1,5 +1,5 @@
 /**
- * @file authorExtractor.js
+ * @file authorExtractor.ts
  * @description Extracts and formats author names from RSS/Atom feed items with fallback text parsing.
  */
 
@@ -8,13 +8,13 @@ import { cleanHtml } from './feedParser.utils.js';
 /**
  * Extracts an author name from an RSS/Atom feed element, with fallback regex parsing from article content.
  *
- * @param {string} authorTag - The raw author element content from the feed.
- * @param {string} title - The article headline for fallback matching.
- * @param {string} content - The full article HTML content for fallback matching.
- * @param {string} sourceName - The name of the source publication for exclusion filtering.
- * @returns {string} The cleaned author name, or empty string if none found.
+ * @param authorTag - The raw author element content from the feed.
+ * @param title - The article headline for fallback matching.
+ * @param content - The full article HTML content for fallback matching.
+ * @param sourceName - The name of the source publication for exclusion filtering.
+ * @returns The cleaned author name, or empty string if none found.
  */
-export function extractAuthor(authorTag, title, content, sourceName) {
+export function extractAuthor(authorTag: string | null | undefined, title: string, content: string, sourceName: string): string {
   let author = cleanHtml(authorTag || '').trim();
 
   if (author.toLowerCase().startsWith('by ')) {
@@ -27,7 +27,7 @@ export function extractAuthor(authorTag, title, content, sourceName) {
     author = emailMatch[1].trim();
   }
 
-  const isInvalidAuthor = (name) => {
+  const isInvalidAuthor = (name: string): boolean => {
     if (!name) return true;
     const lower = name.toLowerCase();
     if (lower.includes('@') || lower.includes('http')) return true;

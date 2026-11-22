@@ -1,19 +1,20 @@
 /**
- * @file imageScraper.js
+ * @file imageScraper.ts
  * @description Scrapes OpenGraph images from external web pages with shared deduplication caching.
  */
 
 import { networkConfig } from '#lib/config/networkConfig.js';
 
 // Shared image scraping cache to deduplicate requests across all components
-const imageScrapeCache = new Map();
+const imageScrapeCache = new Map<string, Promise<string>>();
 
-export async function scrapeUrlForImage(url, signal) {
+export async function scrapeUrlForImage(url: string, signal?: AbortSignal): Promise<string> {
   if (!url) return "";
 
   // Deduplication: return existing promise if already scraping this URL
-  if (imageScrapeCache.has(url)) {
-    return imageScrapeCache.get(url);
+  const cached = imageScrapeCache.get(url);
+  if (cached) {
+    return cached;
   }
 
   const promise = (async () => {
@@ -54,7 +55,7 @@ export async function scrapeUrlForImage(url, signal) {
 }
 
 // Clear a URL from the scrape cache (useful for cleanup or manual refresh)
-export function clearImageScrapeCache(url) {
+export function clearImageScrapeCache(url?: string): void {
   if (url) {
     imageScrapeCache.delete(url);
   } else {
@@ -62,7 +63,7 @@ export function clearImageScrapeCache(url) {
   }
 }
 
-export function scrapeImage(html) {
+export function scrapeImage(html: string | null | undefined): string {
   if (!html) return '';
   const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
   return match ? match[1] : '';

@@ -1,10 +1,26 @@
 /**
- * @file feeds.js
+ * @file feeds.ts
  * @description RSS feed source configuration defining core, global, and extended feed URLs
  * along with publisher logo mappings and Australia-specific keyword filters.
  */
 
-export const feeds = {
+import type { AssetPath } from '$app/types';
+
+/** A file name inside static/logos/, checked against the files that actually exist there. */
+type LogoFileOf<P> = P extends `logos/${infer F}` ? F : never;
+export type LogoFile = LogoFileOf<AssetPath>;
+
+interface FeedsConfig {
+  /** Feed URL -> publisher name */
+  coreSources: Record<string, string>;
+  globalSources: Record<string, string>;
+  extendedSources: Record<string, string>;
+  auKeywords: string[];
+  /** Publisher name -> logo file name, or '' when there is no logo */
+  publisherLogos: Record<string, LogoFile | ''>;
+}
+
+export const feeds: FeedsConfig = {
   coreSources: {
     "https://www.3cr.org.au/news.xml": "3CR",
     "https://arena.org.au/feed": "ARENA",

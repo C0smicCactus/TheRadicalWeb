@@ -1,17 +1,29 @@
-<script>
+<script lang="ts">
   import { untrack } from 'svelte';
   import { helpers } from '#lib/utils/helpers.js';
   import { feedParser } from '#lib/services/feedParser.js';
   import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
+  import type { Article } from '#lib/models/Article.js';
 
-  let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onComplete, onClose } = $props();
+  interface Props {
+    articles: Article[];
+    initialIndex?: number;
+    sourceName: string;
+    primaryColor: string;
+    onStoryViewed: (link: string) => void;
+    onComplete?: () => void;
+    onClose: () => void;
+  }
+
+  let { articles, initialIndex = 0, sourceName, primaryColor, onStoryViewed, onComplete, onClose }: Props = $props();
 
   /* svelte-ignore state_referenced_locally */
   let currentIndex = $state(initialIndex);
-  let resolvedThumbnails = $state({});
+  /** Story index -> image scraped from the article page */
+  let resolvedThumbnails = $state<Record<number, string>>({});
   let progress = $state(0);
-  let animationFrame;
-  let startTime;
+  let animationFrame = 0;
+  let startTime = 0;
 
   // Swipe gesture composable
   const swipe = useSwipeGesture({
@@ -26,7 +38,7 @@
     }
   });
 
-  function loadThumb(index) {
+  function loadThumb(index: number) {
     const article = articles[index];
     if (!article || article.thumbnail || resolvedThumbnails[index]) return;
     feedParser.scrapeUrlForImage(article.link).then(scraped => {
@@ -87,7 +99,7 @@
     };
   });
 
-  function handleTap(e) {
+  function handleTap(e: MouseEvent) {
     // Don't process tap if a swipe occurred
     if (swipe.swipeDirection || swipe.isSwiping) return;
 

@@ -3,9 +3,9 @@ import { getMegaFeed } from '#lib/server/feedAggregator.js';
 export const prerender = true;
 
 // Helper function to safely escape strict XML characters using string concatenation
-function escapeXml(unsafe) {
+function escapeXml(unsafe: string | null | undefined): string {
   if (!unsafe) return '';
-  return unsafe.toString().replace(/[<>&'"]/g, function (c) {
+  return unsafe.toString().replace(/[<>&'"]/g, function (c: string) {
     switch (c) {
       case '<': return '&' + 'lt;';
       case '>': return '&' + 'gt;';

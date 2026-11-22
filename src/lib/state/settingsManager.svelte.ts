@@ -4,7 +4,7 @@ export class SettingsManager {
   extendedMode = $state(false);
   topicsEnabled = $state(false);
   allSourcesEnabled = $state(true);
-  enabledSources = $state(new Set());
+  enabledSources = $state(new Set<string>());
 
   init() {
     this.extendedMode = localStorage.getItem('extended_coverage') === 'true';
@@ -13,7 +13,7 @@ export class SettingsManager {
 
     const savedSources = localStorage.getItem('enabled_sources');
     if (savedSources) {
-      this.enabledSources = new Set(JSON.parse(savedSources));
+      this.enabledSources = new Set<string>(JSON.parse(savedSources));
     } else {
         this.enabledSources = new Set([
           ...Object.values(feeds.coreSources),
@@ -22,21 +22,21 @@ export class SettingsManager {
     }
   }
 
-  setExtendedMode(v, onLogicUpdate) {
+  setExtendedMode(v: boolean, onLogicUpdate?: () => void) {
     this.extendedMode = v;
-    localStorage.setItem('extended_coverage', v);
+    localStorage.setItem('extended_coverage', String(v));
     onLogicUpdate?.();
   }
 
-  setTopicsEnabled(v) {
+  setTopicsEnabled(v: boolean) {
     this.topicsEnabled = v;
-    localStorage.setItem('topics_enabled', v);
+    localStorage.setItem('topics_enabled', String(v));
   }
 
-  setSourcesEnabled(all, set, onLogicUpdate) {
+  setSourcesEnabled(all: boolean, set: Set<string>, onLogicUpdate?: () => void) {
     this.allSourcesEnabled = all;
     this.enabledSources = set;
-    localStorage.setItem('all_sources_enabled', all);
+    localStorage.setItem('all_sources_enabled', String(all));
     localStorage.setItem('enabled_sources', JSON.stringify(Array.from(set)));
     onLogicUpdate?.();
   }

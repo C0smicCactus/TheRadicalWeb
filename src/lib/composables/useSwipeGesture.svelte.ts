@@ -2,14 +2,24 @@
  * Shared swipe gesture composable for touch-based horizontal swipe detection.
  * Used by components that need swipe navigation (ArticleTile, StoryViewer).
  */
-export function useSwipeGesture({ threshold = 50, yThreshold = 100, onSwipe } = {}) {
+export type SwipeDirection = 'left' | 'right';
+
+interface SwipeGestureOptions {
+  /** Minimum horizontal distance in px to count as a swipe */
+  threshold?: number;
+  /** Vertical movement in px that cancels the swipe (so scrolling still works) */
+  yThreshold?: number;
+  onSwipe?: (direction: SwipeDirection) => void;
+}
+
+export function useSwipeGesture({ threshold = 50, yThreshold = 100, onSwipe }: SwipeGestureOptions = {}) {
   let touchStartX = $state(0);
   let touchStartY = $state(0);
   let touchEndX = $state(0);
   let isSwiping = $state(false);
-  let swipeDirection = $state('');
+  let swipeDirection = $state<SwipeDirection | ''>('');
 
-  function handleTouchStart(e) {
+  function handleTouchStart(e: TouchEvent) {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
     touchEndX = touchStartX;
@@ -17,7 +27,7 @@ export function useSwipeGesture({ threshold = 50, yThreshold = 100, onSwipe } = 
     swipeDirection = '';
   }
 
-  function handleTouchMove(e) {
+  function handleTouchMove(e: TouchEvent) {
     if (!isSwiping) return;
 
     touchEndX = e.touches[0].clientX;

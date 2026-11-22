@@ -1,3 +1,5 @@
+import type { Handle } from '@sveltejs/kit/hooks';
+
 (function fixGetterOnlyFetch() {
   try {
     const targets = [globalThis];
@@ -21,7 +23,6 @@
   } catch (_) {}
 })();
 
-/** @type {import('@sveltejs/kit/hooks').Handle} */
-export async function handle({ event, resolve }) {
+export const handle: Handle = async ({ event, resolve }) => {
   return await resolve(event);
-}
+};

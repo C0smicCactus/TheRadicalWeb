@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
   import { helpers } from '#lib/utils/helpers.js';
   import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
 
-  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction } = $props();
+  import type { ArticleTileVariantProps } from './types.js';
+
+  let { article, primaryColor, onArticleOpen, topicsEnabled, finalThumbnail, lazyLoadAction }: ArticleTileVariantProps = $props();
 
   let currentIndex = $state(0);
 
@@ -15,13 +17,13 @@
     }
   });
 
-  function openLink(e) {
+  function openLink(e?: Event) {
     if (e) e.stopPropagation();
     if (onArticleOpen) onArticleOpen(article.title);
   }
 
-  function nextSlide(e) { if (e) e.stopPropagation(); currentIndex = 1; }
-  function prevSlide(e) { if (e) e.stopPropagation(); currentIndex = 0; }
+  function nextSlide(e?: Event) { if (e) e.stopPropagation(); currentIndex = 1; }
+  function prevSlide(e?: Event) { if (e) e.stopPropagation(); currentIndex = 0; }
 </script>
 
 <div role="article" class="w-[400px] max-w-full h-[610px] flex flex-col" ontouchstart={swipe.handleTouchStart} ontouchmove={swipe.handleTouchMove} ontouchend={swipe.handleTouchEnd} use:lazyLoadAction>
@@ -39,7 +41,7 @@
       <!-- Main Story image area -->
       <a href={article.link} target="_blank" rel="noopener noreferrer" class="w-1/2 h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
         {#if finalThumbnail || article.thumbnail}
-          <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <img src={finalThumbnail || article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
         {/if}
         <div class="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/90"></div>
 

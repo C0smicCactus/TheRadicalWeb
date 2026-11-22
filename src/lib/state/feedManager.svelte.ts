@@ -2,7 +2,7 @@ import { resolve } from '$app/paths';
 import { feeds } from '#lib/config/feeds.js';
 import { networkConfig } from '#lib/config/networkConfig.js';
 import { helpers } from '#lib/utils/helpers.js';
-import { Article } from '#lib/models/Article.js';
+import { Article, type ArticleMap } from '#lib/models/Article.js';
 import { ThemeManager } from './themeManager.svelte.js';
 import { SettingsManager } from './settingsManager.svelte.js';
 
@@ -30,10 +30,11 @@ export class FeedManager {
   get enabledSources() { return this.settingsManager.enabledSources; }
 
   // === Data State ===
-  upToDateLink = $state(null);
-  allArticles = $state([]);
-  displayList = $state([]);
-  viewedStoryMap = $state({});
+  upToDateLink = $state<string | null>(null);
+  allArticles = $state<Article[]>([]);
+  displayList = $state<Article[]>([]);
+  /** Article link -> ISO time it was viewed in the story viewer */
+  viewedStoryMap = $state<Record<string, string>>({});
   visibleCount = $state(networkConfig.articlesPerPage);
 
   // === Component States ===
@@ -61,14 +62,14 @@ export class FeedManager {
   /**
    * Persists viewed stories to local storage with a debounce to prevent spamming browser I/O.
    */
-  debouncedPersist = helpers.debounce((data) => {
+  debouncedPersist = helpers.debounce((data: Record<string, string>) => {
     localStorage.setItem(networkConfig.viewedStoriesKey, JSON.stringify(data));
   }, 1500);
 
   /**
    * Persists the current article feed to offline cache.
    */
-  debouncedSaveCache = helpers.debounce((data) => {
+  debouncedSaveCache = helpers.debounce((data: ArticleMap[]) => {
     try {
       localStorage.setItem(networkConfig.offlineCacheKey, JSON.stringify(data));
     } catch (_) {}
@@ -102,7 +103,7 @@ export class FeedManager {
       const cachedStr = localStorage.getItem(networkConfig.offlineCacheKey);
       if (cachedStr) {
         try {
-          const decoded = JSON.parse(cachedStr);
+          const decoded: ArticleMap[] = JSON.parse(cachedStr);
           this.allArticles = decoded.map(m => Article.fromMap(m));
           this.isLoading = false;
           this.applyLogic();
@@ -116,10 +117,10 @@ export class FeedManager {
   /**
    * Cleans up viewed stories older than the maximum age threshold (default 48hrs).
    */
-  cleanupOldStories = (mapData) => {
+  cleanupOldStories = (mapData: Record<string, string>) => {
     const now = new Date();
     let changed = false;
-    const cleanMap = {};
+    const cleanMap: Record<string, string> = {};
     for (const [link, ts] of Object.entries(mapData)) {
       const date = new Date(ts);
       if ((now.getTime() - date.getTime()) / (1000 * 60 * 60) <= networkConfig.maxViewedStoryAgeHours) {
@@ -132,11 +133,11 @@ export class FeedManager {
     if (changed) this.persistViewedStories(cleanMap);
   }
 
-  persistViewedStories = (mapData = this.viewedStoryMap) => {
+  persistViewedStories = (mapData: Record<string, string> = this.viewedStoryMap) => {
     this.debouncedPersist(mapData);
   }
 
-  markStoryViewed = (link) => {
+  markStoryViewed = (link: string) => {
     if (!this.viewedStoryMap[link]) {
       this.viewedStoryMap = { ...this.viewedStoryMap, [link]: new Date().toISOString() };
       this.persistViewedStories();
@@ -160,7 +161,7 @@ export class FeedManager {
       const res = await fetch(`${resolve('/radical-data.json')}?t=${Date.now()}`); 
       
       if (res.ok) {
-        const data = await res.json();
+        const data: ArticleMap[] = await res.json();
         this.completedSources = 1; // Snaps progress bar to 100%
         
         // Small timeout so the user actually sees the 100% loading ring
@@ -182,7 +183,7 @@ export class FeedManager {
   /**
    * Evaluates the fresh network batch, replaces the local instance map, and initiates filtration.
    */
-  processFetchedArticles = (freshBatch) => {
+  processFetchedArticles = (freshBatch: Article[]) => {
     // If no network data, fall back entirely to local state/cache
     if (freshBatch.length === 0) {
       this.isLoading = false;
@@ -271,26 +272,26 @@ export class FeedManager {
   
   toggleTheme = () => this.themeManager.toggleTheme();
   
-  updateTheme = (color) => this.themeManager.updateTheme(color);
+  updateTheme = (color: string) => this.themeManager.updateTheme(color);
 
-  setTopicsEnabled = (v) => this.settingsManager.setTopicsEnabled(v);
+  setTopicsEnabled = (v: boolean) => this.settingsManager.setTopicsEnabled(v);
 
-  setExtendedMode = (v) => {
+  setExtendedMode = (v: boolean) => {
     this.settingsManager.setExtendedMode(v, () => this.applyLogic());
     if (v) this.fetchNews();
   };
 
-  setSearchQuery = (q) => {
+  setSearchQuery = (q: string) => {
     this.searchQuery = q;
     this.applyLogic();
   }
 
-  setActiveFilter = (f) => {
+  setActiveFilter = (f: string) => {
     this.activeFilter = f;
     this.applyLogic();
   }
 
-  setSourcesEnabled = (all, set) => {
+  setSourcesEnabled = (all: boolean, set: Set<string>) => {
     this.settingsManager.setSourcesEnabled(all, set, () => this.applyLogic());
     this.fetchNews();
   }

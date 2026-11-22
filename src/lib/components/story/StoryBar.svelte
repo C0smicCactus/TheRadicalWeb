@@ -1,24 +1,49 @@
-<script>
+<script lang="ts">
   import { asset } from '$app/paths';
   import { feeds } from '#lib/config/feeds.js';
   import StoryViewer from '#lib/components/story/StoryViewer.svelte';
+  import type { Article } from '#lib/models/Article.js';
 
-  let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor } = $props();
+  interface Props {
+    allArticles: Article[];
+    viewedStoryLinks: Set<string>;
+    onStoryViewed: (link: string) => void;
+    primaryColor: string;
+  }
 
-  function buildEntries() {
+  /** One publisher's stories from the last 24 hours */
+  interface StoryEntry {
+    source: string;
+    stories: Article[];
+    isFullyViewed: boolean;
+  }
+
+  interface ActiveStory {
+    articles: Article[];
+    sourceName: string;
+    initialIndex: number;
+  }
+
+  let { allArticles, viewedStoryLinks, onStoryViewed, primaryColor }: Props = $props();
+
+  function buildEntries(): StoryEntry[] {
     const now = new Date();
-    const storyMap = new Map();
+    const storyMap = new Map<string, Article[]>();
 
     for (const article of allArticles) {
       const articleDate = article.parsedDate instanceof Date ? article.parsedDate : new Date(article.parsedDate);
       if ((now.getTime() - articleDate.getTime()) / (1000 * 60 * 60) < 24) {
-        if (!storyMap.has(article.source)) storyMap.set(article.source, []);
-        storyMap.get(article.source).push(article);
+        let stories = storyMap.get(article.source);
+        if (!stories) {
+          stories = [];
+          storyMap.set(article.source, stories);
+        }
+        stories.push(article);
       }
     }
 
-    const unviewed = [];
-    const viewed = [];
+    const unviewed: StoryEntry[] = [];
+    const viewed: StoryEntry[] = [];
 
     for (const [source, stories] of storyMap.entries()) {
       const isFullyViewed = stories.every(a => viewedStoryLinks.has(a.link));
@@ -27,17 +52,17 @@
       else unviewed.push(entry);
     }
 
-    unviewed.sort((a, b) => b.stories[0].parsedDate - a.stories[0].parsedDate);
-    viewed.sort((a, b) => b.stories[0].parsedDate - a.stories[0].parsedDate);
+    unviewed.sort((a, b) => b.stories[0].parsedDate.getTime() - a.stories[0].parsedDate.getTime());
+    viewed.sort((a, b) => b.stories[0].parsedDate.getTime() - a.stories[0].parsedDate.getTime());
 
     return [...unviewed, ...viewed];
   }
 
   let finalEntries = $derived(buildEntries());
 
-  let activeStoryData = $state(null);
+  let activeStoryData = $state<ActiveStory | null>(null);
   let activeEntryIndex = $state(-1);
-  let storyEntriesSnapshot = $state([]);
+  let storyEntriesSnapshot = $state<StoryEntry[]>([]);
 
   function handleStoryComplete() {
     const nextIndex = storyEntriesSnapshot.findIndex(
@@ -65,6 +90,7 @@
   <div class="w-full border-b border-borderSubtle flex justify-center bg-appBackground shadow-xs z-10">
     <div class="max-w-[1754px] w-full h-[135px] overflow-x-auto px-6 py-3 flex space-x-5 items-center">
       {#each finalEntries as entry (entry.source)}
+        {@const logo = feeds.publisherLogos[entry.source]}
         <button
           class="flex flex-col items-center cursor-pointer min-w-[80px] bg-transparent border-none p-0 outline-hidden hover:opacity-80 transition-opacity"
           onclick={() => {
@@ -92,13 +118,13 @@
                 {entry.source.substring(0, entry.source.length > 2 ? 2 : 1)}
               </span>
 
-              <!-- Actual Logo Image (Only rendered if mapped in feeds.js) -->
-              {#if feeds.publisherLogos[entry.source]}
+              <!-- Actual Logo Image (Only rendered if mapped in feeds.ts) -->
+              {#if logo}
                 <img
-                  src={asset(`logos/${feeds.publisherLogos[entry.source]}`)}
+                  src={asset(`logos/${logo}`)}
                   alt="{entry.source}"
                   class="relative w-full h-full object-cover object-center z-10 bg-appSurface"
-                  onerror={(e) => { e.currentTarget.style.display = 'none'; }}
+                  onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 />
               {/if}
             </div>

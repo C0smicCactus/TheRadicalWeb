@@ -1,10 +1,19 @@
 /**
- * @file topics.js
+ * @file topics.ts
  * @description Topic/tag classification configuration defining keyword-weighted categories
  * for automatic article tagging (e.g., ECONOMY, ENVIRONMENT, LABOUR, PRAXIS, etc.).
  */
 
-export const topics = [
+export interface Topic {
+  name: string;
+  /** Minimum keyword score for an article to get this topic */
+  threshold: number;
+  /** If any of these words appear, the topic is not applied */
+  exclusions: string[];
+  keywords: { keyword: string; weight: number }[];
+}
+
+export const topics: Topic[] = [
   {
     name: "ECONOMY",
     threshold: 2.0,

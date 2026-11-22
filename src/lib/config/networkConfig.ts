@@ -33,19 +33,19 @@ export const networkConfig = {
   // Max total proxy attempts per feed (proxies × retry attempts)
   maxProxyAttemptsPerFeed: 3,
 
-  wrapCorsProxy(url, proxyIndex = 0) {
+  wrapCorsProxy(url: string, proxyIndex = 0): string {
     if (!this.useCorsProxies) return url;
     if (proxyIndex >= this.corsProxies.length) proxyIndex = 0;
     const proxy = this.corsProxies[proxyIndex];
     return `${proxy.url}${encodeURIComponent(url)}`;
   },
 
-  getProxyName(proxyIndex = 0) {
+  getProxyName(proxyIndex = 0): string {
     if (proxyIndex >= this.corsProxies.length) proxyIndex = 0;
     return this.corsProxies[proxyIndex].name;
   },
 
-  wrapImageProxy(url) {
+  wrapImageProxy(url: string): string {
     if (!url || !this.useCorsProxies) return url;
     return `${this.imageProxy}${encodeURIComponent(url)}${this.imageProxyParams}`;
   }

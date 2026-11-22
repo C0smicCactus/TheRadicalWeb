@@ -1,5 +1,5 @@
 /**
- * @file colors.js
+ * @file colors.ts
  * @description Color palette configuration for the application theme system.
  * Defines default background, surface, border, and text colors, plus available theme accent choices.
  */

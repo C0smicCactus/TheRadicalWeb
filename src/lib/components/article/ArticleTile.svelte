@@ -1,16 +1,26 @@
-<script>
+<script lang="ts">
   import { feedParser } from '#lib/services/feedParser.js';
   
   import ArticleTileMobile from './ArticleTileMobile.svelte';
   import ArticleTileDesktop from './ArticleTileDesktop.svelte';
   import ArticleTileHero from './ArticleTileHero.svelte';
 
-  let { article, primaryColor, onArticleOpen, variant = "mobile", topicsEnabled = false } = $props();
-  let finalThumbnail = $state(undefined);
+  import type { Article } from '#lib/models/Article.js';
+
+  interface Props {
+    article: Article;
+    primaryColor: string;
+    onArticleOpen?: (title: string) => void;
+    variant?: 'mobile' | 'desktop' | 'hero';
+    topicsEnabled?: boolean;
+  }
+
+  let { article, primaryColor, onArticleOpen, variant = "mobile", topicsEnabled = false }: Props = $props();
+  let finalThumbnail = $state<string | undefined>(undefined);
 
   // Use Intersection Observer to only scrape image once the tile enters the viewport
-  function lazyLoadAction(node) {
-    let observer;
+  function lazyLoadAction(node: HTMLElement) {
+    let observer: IntersectionObserver | undefined;
     if (!finalThumbnail && !article.thumbnail && article.link) {
       observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
@@ -19,7 +29,7 @@
               finalThumbnail = feedParser.scrapeImage(scraped) || scraped;
             }
           });
-          observer.disconnect(); // Fire once and detach
+          observer?.disconnect(); // Fire once and detach
         }
       }, { rootMargin: '300px' }); // Trigger scrape 300px before scrolling into view
       observer.observe(node);

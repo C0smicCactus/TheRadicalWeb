@@ -1,14 +1,14 @@
 /**
- * @file feedParser.utils.js
+ * @file feedParser.utils.ts
  * @description Shared helpers for feed parsing: date parsing, HTML cleaning, and host resolution.
  */
 
 import { feeds } from '#lib/config/feeds.js';
 
 // Cache registered hosts once
-let _registeredHosts = null;
+let _registeredHosts: string[] | null = null;
 
-export function getRegisteredHosts() {
+export function getRegisteredHosts(): string[] {
   if (_registeredHosts) return _registeredHosts;
   const allFeedUrls = [
     ...Object.keys(feeds.coreSources),
@@ -25,10 +25,10 @@ export function getRegisteredHosts() {
  * Parses an RFC 822 or ISO 8601 date string into a JavaScript Date object.
  * Falls back to the current date if parsing fails.
  *
- * @param {string} s - The date string to parse.
- * @returns {Date} The parsed Date object, or the current date on failure.
+ * @param s - The date string to parse.
+ * @returns The parsed Date object, or the current date on failure.
  */
-export function parseDate(s) {
+export function parseDate(s: string | null | undefined): Date {
   if (!s) return new Date();
   const parsed = new Date(s);
   if (!isNaN(parsed.getTime())) return parsed;
@@ -45,10 +45,10 @@ export function parseDate(s) {
  * Cleans HTML content by removing tags, decoding entities, and normalizing whitespace.
  * Handles multiple levels of entity encoding (e.g., &amp; -> &).
  *
- * @param {string} input - The raw HTML string to clean.
- * @returns {string} The cleaned plain text content.
+ * @param input - The raw HTML string to clean.
+ * @returns The cleaned plain text content.
  */
-export function cleanHtml(input) {
+export function cleanHtml(input: string | null | undefined): string {
   if (!input) return "";
 
   let result = input.toString();
@@ -57,8 +57,8 @@ export function cleanHtml(input) {
   result = result.replace(/<!\[CDATA\[/gi, '').replace(/\]\]>/gi, '');
 
   // 2. Decode entities (Loop up to 3 times to handle double/triple encoding)
-  const decodeEntities = (str) => {
-    let prev;
+  const decodeEntities = (str: string): string => {
+    let prev: string;
     let passes = 0;
     do {
       prev = str;
@@ -78,8 +78,8 @@ export function cleanHtml(input) {
         .replace(new RegExp('&' + 'mdash;', 'gi'), '—')
         .replace(new RegExp('&' + 'nbsp;', 'gi'), ' ')
         // Catch numeric entity codes (with or without semicolons)
-        .replace(/&#(\d+);?/g, (match, dec) => String.fromCharCode(dec))
-        .replace(/&#x([a-fA-F0-9]+);?/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+        .replace(/&#(\d+);?/g, (_match: string, dec: string) => String.fromCharCode(Number(dec)))
+        .replace(/&#x([a-fA-F0-9]+);?/gi, (_match: string, hex: string) => String.fromCharCode(parseInt(hex, 16)));
       passes++;
     } while (str !== prev && passes < 3);
     return str;

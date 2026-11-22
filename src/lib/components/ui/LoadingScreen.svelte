@@ -1,5 +1,11 @@
-<script>
-  let { primaryColor, progressPercent, statusMessage } = $props();
+<script lang="ts">
+  interface Props {
+    primaryColor: string;
+    progressPercent: number;
+    statusMessage: string;
+  }
+
+  let { primaryColor, progressPercent, statusMessage }: Props = $props();
 </script>
 
 <div class="flex-1 flex flex-col items-center justify-center p-8">

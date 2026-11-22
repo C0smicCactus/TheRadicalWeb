@@ -1,5 +1,10 @@
-<script>
-  let { primaryColor, onClose } = $props();
+<script lang="ts">
+  interface Props {
+    primaryColor: string;
+    onClose: () => void;
+  }
+
+  let { primaryColor, onClose }: Props = $props();
 </script>
 
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">

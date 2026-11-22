@@ -1,5 +1,41 @@
+/** An article as stored in radical-data.json and the offline cache (dates as ISO strings). */
+export interface ArticleMap {
+  title: string;
+  link: string;
+  description: string;
+  source: string;
+  thumbnail: string;
+  author: string | null;
+  parsedDate: string;
+  topics: string[];
+  dominantColor: string | null;
+}
+
+/** Fields accepted when creating an Article. Anything left out gets a default. */
+export interface ArticleParams {
+  title?: string;
+  link?: string;
+  description?: string;
+  source?: string;
+  thumbnail?: string;
+  author?: string | null;
+  parsedDate?: Date | string | number;
+  topics?: string[];
+  dominantColor?: string | null;
+}
+
 export class Article {
-  constructor(params = {}) {
+  title: string;
+  link: string;
+  description: string;
+  source: string;
+  thumbnail: string;
+  author: string | null;
+  parsedDate: Date;
+  topics: string[];
+  dominantColor: string | null;
+
+  constructor(params: ArticleParams = {}) {
     const {
       title = '',
       link = '',
@@ -23,7 +59,7 @@ export class Article {
     this.dominantColor = dominantColor;
   }
 
-  toMap() {
+  toMap(): ArticleMap {
     return {
       title: this.title,
       link: this.link,
@@ -37,7 +73,7 @@ export class Article {
     };
   }
 
-  static fromMap(map) {
+  static fromMap(map: Partial<ArticleMap> | null | undefined): Article {
     if (!map) return new Article();
     return new Article({
       ...map,

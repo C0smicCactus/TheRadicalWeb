@@ -1,5 +1,5 @@
 /**
- * @file feedParser.js
+ * @file feedParser.ts
  * @description Main orchestrator for parsing RSS/Atom feed XML into Article objects.
  * Supports both DOMParser (browser) and Regex fallback (Node.js/server) parsing strategies.
  */
@@ -18,25 +18,40 @@ import { feedOverrides } from './feedOverrides.js';
  * Processes extracted feed item data into a clean Article instance.
  * Handles URL resolution, source-specific overrides, tag calculation, and filtering.
  *
- * @param {object} payload - The extraction payload containing all item fields.
- * @param {string} payload.titleStr - The raw title string.
- * @param {string} payload.linkStr - The raw link/URL string.
- * @param {string} payload.sourceName - The name of the feed source.
- * @param {string} payload.feedUrl - The base URL of the feed for relative URL resolution.
- * @param {object} payload.registeredHosts - Map of known hosts for deduplication.
- * @param {number} payload.maxArticles - Maximum number of articles to collect.
- * @param {Array} payload.results - The results array to push articles into.
- * @param {string} payload.pubDateStr - The publication date string.
- * @param {string} payload.summaryStr - The summary/description text.
- * @param {string} payload.descStr - The description tag text.
- * @param {string} payload.contentEncodedStr - The encoded content text.
- * @param {string} payload.authorTagContent - The author tag text content.
+ * @param payload - The extraction payload containing all item fields.
+ * @param payload.titleStr - The raw title string.
+ * @param payload.linkStr - The raw link/URL string.
+ * @param payload.sourceName - The name of the feed source.
+ * @param payload.feedUrl - The base URL of the feed for relative URL resolution.
+ * @param payload.registeredHosts - Map of known hosts for deduplication.
+ * @param payload.maxArticles - Maximum number of articles to collect.
+ * @param payload.results - The results array to push articles into.
+ * @param payload.pubDateStr - The publication date string.
+ * @param payload.summaryStr - The summary/description text.
+ * @param payload.descStr - The description tag text.
+ * @param payload.contentEncodedStr - The encoded content text.
+ * @param payload.authorTagContent - The author tag text content.
  */
+interface ExtractedItem {
+  titleStr: string | null | undefined;
+  linkStr: string | null | undefined;
+  sourceName: string;
+  feedUrl: string;
+  registeredHosts: string[];
+  maxArticles: number | null;
+  results: Article[];
+  pubDateStr: string | null | undefined;
+  summaryStr: string | null | undefined;
+  descStr: string | null | undefined;
+  contentEncodedStr: string | null | undefined;
+  authorTagContent: string | null | undefined;
+}
+
 function processExtractedItem({ 
   titleStr, linkStr, sourceName, feedUrl, registeredHosts, 
   maxArticles, results, pubDateStr, summaryStr, descStr, 
   contentEncodedStr, authorTagContent 
-}) {
+}: ExtractedItem): boolean {
   let title = cleanHtml(titleStr || 'Untitled');
   let link = (linkStr || '').trim();
 
@@ -57,7 +72,7 @@ function processExtractedItem({
     if (!isRelevant) return false;
   }
 
-  let bestDesc = summaryStr?.trim().length > 0 ? summaryStr : descStr;
+  let bestDesc = (summaryStr?.trim().length ?? 0) > 0 ? summaryStr : descStr;
   if (!bestDesc && contentEncodedStr) bestDesc = contentEncodedStr;
   const searchContent = `${summaryStr || ''} ${descStr || ''} ${contentEncodedStr || ''}`;
 
@@ -73,7 +88,7 @@ function processExtractedItem({
 
   // SPECIAL RULE: DISPUTES REPORT
   if (sourceName === "DISPUTES REPORT" && (contentEncodedStr || bestDesc)) {
-    const fullHtmlContent = contentEncodedStr || bestDesc;
+    const fullHtmlContent = contentEncodedStr || bestDesc || '';
     const extracted = feedOverrides.extractDisputesReport({
       link, fullHtmlContent, articleSourceName, pubDateStr, author, maxArticles, currentResults: results.length
     });
@@ -112,9 +127,9 @@ function processExtractedItem({
 }
 
 export const feedParser = {
-  parse(rawXml, sourceName, feedUrl, maxArticles = null) {
+  parse(rawXml: string, sourceName: string, feedUrl: string, maxArticles: number | null = null): Article[] {
     if (!rawXml) return [];
-    const results = [];
+    const results: Article[] = [];
     const registeredHosts = getRegisteredHosts();
 
     let domParsed = false;
@@ -130,7 +145,7 @@ export const feedParser = {
             domParsed = true;
             for (const item of items) {
               const title = item.querySelector("title")?.textContent;
-              let link = item.querySelector("link")?.textContent?.trim();
+              let link: string | null | undefined = item.querySelector("link")?.textContent?.trim();
               if (!link) link = item.querySelector("link")?.getAttribute("href");
 
               const pubDate = item.querySelector("pubDate, published, date")?.textContent ||
@@ -219,23 +234,23 @@ export const feedParser = {
     return results;
   },
 
-  async scrapeUrlForImage(url, signal) {
+  async scrapeUrlForImage(url: string, signal?: AbortSignal): Promise<string> {
     return scrapeUrlForImage(url, signal);
   },
 
-  clearImageScrapeCache(url) {
+  clearImageScrapeCache(url?: string): void {
     clearImageScrapeCache(url);
   },
 
-  parseDate(s) {
+  parseDate(s: string): Date {
     return parseDate(s);
   },
 
-  cleanHtml(input) {
+  cleanHtml(input: string): string {
     return cleanHtml(input);
   },
 
-  scrapeImage(html) {
+  scrapeImage(html: string): string {
     return scrapeImage(html);
   }
 };

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { FeedManager } from '#lib/state/feedManager.svelte.js';
 

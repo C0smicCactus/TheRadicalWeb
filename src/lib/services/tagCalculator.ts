@@ -1,5 +1,5 @@
 /**
- * @file tagCalculator.js
+ * @file tagCalculator.ts
  * @description Calculates topic tags for articles based on keyword scoring and threshold detection.
  */
 
@@ -8,13 +8,13 @@ import { topics } from '#lib/config/topics.js';
 /**
  * Calculates and assigns relevant topic tags to an article based on keyword scoring.
  *
- * @param {string} title - The article headline.
- * @param {string} descText - The short summary/description of the article.
- * @param {string} fullContent - The full parsed HTML content.
- * @returns {string[]} An array of assigned topic names (e.g., ["LABOUR", "PRAXIS"]).
+ * @param title - The article headline.
+ * @param descText - The short summary/description of the article.
+ * @param fullContent - The full parsed HTML content.
+ * @returns An array of assigned topic names (e.g., ["LABOUR", "PRAXIS"]).
  */
-export function calculateTags(title, descText, fullContent) {
-  const tags = [];
+export function calculateTags(title: string, descText: string | null | undefined, fullContent: string): string[] {
+  const tags: string[] = [];
   const textLower = `${title} ${descText} ${fullContent}`.toLowerCase();
   const titleLower = title.toLowerCase();
 

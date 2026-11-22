@@ -25,7 +25,7 @@ export class ThemeManager {
     }
   }
 
-  updateTheme = (color) => {
+  updateTheme = (color: string) => {
     this.primaryColor = color;
     localStorage.setItem('theme_color', color);
   }
