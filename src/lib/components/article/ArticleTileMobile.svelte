@@ -1,32 +1,25 @@
 <script lang="ts">
   import { helpers } from '#lib/utils/helpers.js';
-  import { useSwipeGesture } from '#lib/composables/useSwipeGesture.svelte.js';
 
   import type { ArticleTileVariantProps } from './types.js';
 
   let { article, primaryColor, onArticleOpen, topicsEnabled }: ArticleTileVariantProps = $props();
 
+  /** Which panel is showing (0 = picture, 1 = summary), read from the strip's scroll position for the dots. */
   let currentIndex = $state(0);
 
-  const swipe = useSwipeGesture({
-    threshold: 50,
-    yThreshold: 100,
-    onSwipe: (direction) => {
-      if (direction === 'right') prevSlide();
-      else nextSlide();
-    }
-  });
+  function handleSlideScroll(e: Event) {
+    const strip = e.currentTarget as HTMLElement;
+    currentIndex = Math.round(strip.scrollLeft / strip.clientWidth);
+  }
 
   function openLink(e?: Event) {
     if (e) e.stopPropagation();
     if (onArticleOpen) onArticleOpen(article.title);
   }
-
-  function nextSlide(e?: Event) { if (e) e.stopPropagation(); currentIndex = 1; }
-  function prevSlide(e?: Event) { if (e) e.stopPropagation(); currentIndex = 0; }
 </script>
 
-<div role="article" class="w-[400px] max-w-full h-[610px] flex flex-col" ontouchstart={swipe.handleTouchStart} ontouchmove={swipe.handleTouchMove} ontouchend={swipe.handleTouchEnd}>
+<div role="article" class="w-[400px] max-w-full h-[610px] flex flex-col">
   <div class="flex items-center px-1 pb-2">
     <div class="w-7 h-7 rounded-full bg-appSurface border border-borderSubtle flex items-center justify-center text-textSubtle">
       <i class="fa-solid fa-user text-[11px]"></i>
@@ -36,10 +29,13 @@
     </div>
   </div>
 
-  <div class="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden bg-tileBackground group">
-    <div class="flex transition-transform duration-300 ease-out h-full w-[200%]" style="transform: translateX(-{currentIndex * 50}%);">
+  <!-- isolate keeps the rounded corners clipping the scrolling strip in Safari -->
+  <div class="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden isolate bg-tileBackground group">
+    <!-- The two panels sit side by side in a strip the browser scrolls itself and snaps to one panel,
+         so the slide moves under your finger and settles like it does in phone apps -->
+    <div class="flex h-full overflow-x-auto overscroll-x-contain snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden" onscroll={handleSlideScroll}>
       <!-- Main Story image area -->
-      <a href={article.link} target="_blank" rel="noopener noreferrer" class="w-1/2 h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
+      <a href={article.link} target="_blank" rel="noopener noreferrer" class="w-full shrink-0 snap-start snap-always h-full relative cursor-pointer text-left border-none bg-transparent block p-0 m-0" onclick={openLink}>
         {#if article.thumbnail}
           <img src={article.thumbnail} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
         {/if}
@@ -64,7 +60,7 @@
         </div>
       </a>
 
-      <div class="w-1/2 h-full bg-tileBackground p-7 flex flex-col justify-between border border-borderSubtle">
+      <div class="w-full shrink-0 snap-start snap-always h-full bg-tileBackground p-7 flex flex-col justify-between border border-borderSubtle">
         <div>
           <i class="fa-solid fa-circle-info text-textMain text-lg"></i>
           <div class="mt-4 font-display font-black text-lg text-textMain leading-tight uppercase line-clamp-3 tracking-tighter">{article.title}</div>
@@ -79,11 +75,6 @@
       <div class="w-1.5 h-1.5 rounded-full transition-colors bg-white shadow-xs" style="opacity: {currentIndex === 1 ? 1 : 0.3};"></div>
     </div>
 
-    {#if swipe.isSwiping && swipe.swipeDirection}
-      <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-[30]" style="opacity: {Math.min(Math.abs(swipe.touchEndX - swipe.touchStartX) / 150, 0.4)};">
-        <i class="fa-solid {swipe.swipeDirection === 'left' ? 'fa-arrow-left' : 'fa-arrow-right'} text-white text-4xl drop-shadow-lg"></i>
-      </div>
-    {/if}
   </div>
 
   <div class="px-1 py-1.5 flex flex-col mt-1">
